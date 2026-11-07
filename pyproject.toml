@@ -1,0 +1,17 @@
+[project]
+name = "direct-marketing-offer-optimization"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "pyomo>=6.8",
+    "highspy>=1.7",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.setuptools]
+py-modules = ["generator", "instance", "models", "run_experiments", "setcover"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
