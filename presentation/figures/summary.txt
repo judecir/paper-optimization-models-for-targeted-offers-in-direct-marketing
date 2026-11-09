@@ -46,66 +46,152 @@ appsi_highs  0.044  0.033  0.782
 cplex        0.066  0.057  0.275
 gurobi       0.021  0.023  0.205
 
-EXPERIMENT 2 (S1)
-rows=324 instances=54
-termination={'optimal': 324} LP={'optimal': 324}
-max objective spread over solvers and models=1.000e-11
-objective range=[488, 3446]
-max |MIP gap| (%)=4.591e-14
-LP gap by model:
-       count   mean   std    min    25%    50%    75%    max
-model                                                       
-M1      54.0  44.36  9.92  29.89  36.17  41.84  52.09  65.30
-M2      54.0   1.18  1.86  -0.00   0.00   0.12   1.50   7.08
-LP gap mean by n, M variant, model:
-model      M1    M2
-n  cap             
-5  l    41.52  0.04
-   s    38.63  3.44
-10 l    55.39  0.03
-   s    40.13  2.75
-15 l    57.64  0.04
-   s    32.85  0.77
-M2 zero LP gap: 17/54
-integer time (s) by solver and model:
-                   median   mean     max      sum
-solver      model                                
-appsi_highs M1      5.676  8.849  36.709  477.835
-            M2      1.066  6.583  33.849  355.496
-cplex       M1      0.680  0.781   2.951   42.196
-            M2      0.354  0.455   1.313   24.545
-gurobi      M1      0.344  0.492   1.486   26.588
-            M2      0.199  0.283   1.142   15.290
-M2 mean/max time by n, M variant, solver:
-              mean                      max             
-solver appsi_highs cplex gurobi appsi_highs cplex gurobi
-n  cap                                                  
-5  l          0.16  0.23   0.07        0.17  0.35   0.09
-   s          4.27  0.43   0.14        8.73  0.72   0.20
-10 l          0.56  0.35   0.13        0.71  0.56   0.20
-   s         20.25  0.80   0.43       33.85  1.31   0.86
-15 l          1.88  0.37   0.31        7.00  0.62   0.50
-   s         12.38  0.55   0.62       30.37  0.89   1.14
-M1 mean/max time by n, M variant, solver:
-              mean                      max             
-solver appsi_highs cplex gurobi appsi_highs cplex gurobi
-n  cap                                                  
-5  l          0.12  0.20   0.06        0.13  0.34   0.07
-   s          4.34  0.41   0.15        9.45  0.80   0.23
-10 l          4.00  0.43   0.20        5.19  0.68   0.30
-   s         19.85  0.74   0.62       34.31  0.88   0.91
-15 l         13.55  1.86   1.01       23.12  2.95   1.49
-   s         11.24  1.04   0.92       36.71  1.86   1.40
+EXPERIMENT 2 (S1, S2, S3)
+rows=972 instances=162
+rows per group/solver/model:
+model              M1  M2
+group solver             
+S1    appsi_highs  54  54
+      cplex        54  54
+      gurobi       54  54
+S2    appsi_highs  54  54
+      cplex        54  54
+      gurobi       54  54
+S3    appsi_highs  54  54
+      cplex        54  54
+      gurobi       54  54
+termination={'optimal': 972} LP={'optimal': 972}
+max time (s)=1145.38
+instances with objective spread > 1e-6: 1
+runs with positive final MIP gap:
+                            instance       solver model  objective  best_bound  mip_gap_percent
+752  S3_n15_R15_l_maximum_seed1.json  appsi_highs    M1    11024.0     11025.0         0.009071
+754   S3_n15_R15_l_random_seed1.json  appsi_highs    M1    11018.0     11019.0         0.009076
+859  S3_n15_R15_l_minimum_seed1.json       gurobi    M2    10898.0     10899.0         0.009176
+objective range by group:
+          min      max
+group                 
+S1      488.0   3446.0
+S2     1477.0   6455.0
+S3     1227.0  11024.0
+z_LP(M2) <= z_LP(M1) in all runs: True
+z_LP >= z* in all runs: True
+max spread of LP objective over solvers: 1.182e-11
+LP gap (vs z*) by group and model:
+              mean  median    min    max
+group model                             
+S1    M1     44.36   41.84  29.89  65.30
+      M2      1.18    0.12  -0.00   7.08
+S2    M1     51.61   48.39  33.14  73.09
+      M2      0.87    0.17  -0.00   6.90
+S3    M1     52.24   51.55  31.29  78.82
+      M2      1.76    0.39  -0.00  11.08
+zero LP gap counts:
+group  model
+S1     M1        0
+       M2       17
+S2     M1        0
+       M2       15
+S3     M1        0
+       M2       17
+LP gap mean by group, n, M variant:
+model            M1    M2
+group n  cap             
+S1    5  l    41.52  0.04
+         s    38.63  3.44
+      10 l    55.39  0.03
+         s    40.13  2.75
+      15 l    57.64  0.04
+         s    32.85  0.77
+S2    5  l    68.57  0.07
+         s    36.96  2.09
+      10 l    51.00  0.13
+         s    45.74  1.85
+      15 l    68.27  0.05
+         s    39.10  1.03
+S3    5  l    52.83 -0.00
+         s    67.66  6.76
+      10 l    56.74  0.39
+         s    42.86  2.51
+      15 l    58.84  0.16
+         s    34.51  0.71
+LP gap mean by group and M variant:
+model         M1    M2
+group cap             
+S1    l    51.52  0.04
+      s    37.20  2.32
+S2    l    62.61  0.08
+      s    40.60  1.66
+S3    l    56.14  0.18
+      s    48.35  3.33
+integer time (s):
+                         median   mean      max      sum
+group solver      model                                 
+S1    appsi_highs M1       5.68   8.85    36.71   477.84
+                  M2       1.07   6.58    33.85   355.50
+      cplex       M1       0.68   0.78     2.95    42.20
+                  M2       0.35   0.45     1.31    24.55
+      gurobi      M1       0.34   0.49     1.49    26.59
+                  M2       0.20   0.28     1.14    15.29
+S2    appsi_highs M1       7.33  20.56   193.25  1110.40
+                  M2       2.32  10.29   122.02   555.74
+      cplex       M1       0.74   2.10    10.59   113.65
+                  M2       0.60   0.99     6.21    53.61
+      gurobi      M1       0.57   1.21     3.76    65.13
+                  M2       0.36   0.66     5.06    35.78
+S3    appsi_highs M1      22.65  62.21  1128.02  3359.46
+                  M2       7.97  24.82   139.14  1340.40
+      cplex       M1       0.99  23.82  1145.38  1286.16
+                  M2       0.72   1.39     7.15    75.27
+      gurobi      M1       1.21   2.40    10.02   129.47
+                  M2       0.56   1.32     6.50    71.54
+M2 mean time by group, M variant, solver:
+solver     appsi_highs  cplex  gurobi
+group cap                            
+S1    l           0.87   0.32    0.17
+      s          12.30   0.59    0.40
+S2    l           1.36   0.52    0.29
+      s          19.22   1.46    1.03
+S3    l           6.93   0.80    0.65
+      s          42.71   1.99    2.00
 paired M2 vs M1:
-             M2_faster  geomean_ratio
-solver                               
-appsi_highs       35.0          0.463
-cplex             36.0          0.686
-gurobi            44.0          0.662
+                   M2_faster  geomean_ratio
+group solver                               
+S1    appsi_highs       35.0           0.46
+      cplex             36.0           0.69
+      gurobi            44.0           0.66
+S2    appsi_highs       43.0           0.31
+      cplex             34.0           0.65
+      gurobi            41.0           0.59
+S3    appsi_highs       32.0           0.44
+      cplex             21.0           0.75
+      gurobi            27.0           0.71
 fastest solver counts:
-solver  cplex  gurobi
-model                
-M1          7      47
-M2          8      46
-appsi_highs/gurobi geometric mean time ratio by model: {'M1': 12.39, 'M2': 8.67}
-cplex/gurobi geometric mean time ratio by model: {'M1': 1.85, 'M2': 1.92}
+solver       cplex  gurobi
+group model               
+S1    M1         7      47
+      M2         8      46
+S2    M1         4      50
+      M2         4      50
+S3    M1        25      29
+      M2        11      43
+appsi_highs/gurobi geometric mean time ratio by group and model:
+model     M1    M2
+group             
+S1     12.39  8.67
+S2     13.24  6.84
+S3     13.95  8.66
+cplex/gurobi geometric mean time ratio by group and model:
+model    M1    M2
+group            
+S1     1.85  1.92
+S2     1.55  1.69
+S3     1.22  1.29
+slowest runs:
+                            instance       solver model  elapsed_seconds
+942   S3_n15_R5_l_minimum_seed1.json        cplex    M1      1145.380976
+732  S3_n15_R10_s_minimum_seed1.json  appsi_highs    M1      1128.024371
+728   S3_n15_R5_l_maximum_seed1.json  appsi_highs    M1       243.386743
+744  S3_n15_R15_s_minimum_seed1.json  appsi_highs    M1       222.496833
+396   S2_n15_R5_s_minimum_seed1.json  appsi_highs    M1       193.246823
+696  S3_n10_R10_s_minimum_seed1.json  appsi_highs    M1       191.306767

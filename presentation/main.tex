@@ -185,7 +185,7 @@ Homework 3}
   \footnotesize Generation rules of Section~5.1 of \cite{tallanobibon2011}, compared with the implementation.
   Notation: $C_j=\sum_i c_{ij}$, $\bar M=\sum_i M_i/n$, $F_j=\frac{O_j}{m(1+R)}\sum_i\big[p_{ij}-(1+R)c_{ij}\big]$.\\[2pt]
   \scriptsize
-  \renewcommand{\arraystretch}{1.12}
+  \renewcommand{\arraystretch}{1.0}
   \setlength{\tabcolsep}{4pt}
   \begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.65cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{4.1cm} >{\raggedright\arraybackslash}p{4.3cm} l@{}}
     \toprule
@@ -194,7 +194,7 @@ Homework 3}
     $c_{ij}$ & cost of an offer & integer, uniform in $\{1,2,3\}$ & same & \ok\\
     $p_{ij}$ & return of an offer & integer, uniform in $\{0,\dots,16\}$ & same & \ok\\
     $R$ & hurdle rate & $5\%$, $10\%$ or $15\%$ & same & \ok\\
-    $m$, $n$ & customers, products & S1: $m=100$, $n\in\{5,10,15\}$ & same & \ok\\
+    $m$, $n$ & customers, products & $m=100,200,300$; $n=5,10,15$ & same & \ok\\
     $M_i$ (s) & offers per customer & uniform in $\{1,\dots,n/5\}$ & uniform in $\{1,\dots,\max(1,\lfloor n/5\rfloor)\}$ & \ok\\
     $M_i$ ($\ell$) & offers per customer & uniform in $\{\lceil n/3\rceil,\dots,\lceil 2n/3\rceil\}$ & same & \ok\\
     $O_j$ & MQC & uniform in $\{\lceil\bar M\rceil,\dots,\lceil 2\bar M\rceil\}$ & uniform in $\{\lceil\bar M\rceil,\dots,\lfloor 2\bar M\rfloor\}$ & \dev\\
@@ -208,10 +208,11 @@ Homework 3}
   \begin{ownbox}{Validation of the generator}{}
     \scriptsize
     \begin{itemize}
-      \item Both deviations are documented: the cap on $O_j$ prevents a minimum budget above the maximum,
-            and $2C_j/n$ is treated as a typographical error. All 104 instance files are reproduced exactly; the $f_j$ fallback is never used.
+      \item Both deviations are documented ($O_j$ cap avoids a minimum budget above the maximum; $2C_j/n$ read as a typo).
+            All 212 instance files are reproduced exactly and satisfy these rules; the $f_j$ fallback is never used.
       \item \textbf{Undocumented:} the random stream restarts with the same seed in every call. For a given $n$, instances with different $R$
-            and $M_i$ variant share $p_{ij}$, $c_{ij}$; with the same $M_i$ variant they also share $M_i$, $O_j$. The paper does not say whether its instances are independent.
+            and $M_i$ variant share $p_{ij}$, $c_{ij}$ (same $M_i$ variant: also $M_i$, $O_j$); the first 100 (200) customers of S2 (S3) have the costs of S1 (S2).
+            The paper does not say whether its instances are independent.
     \end{itemize}
   \end{ownbox}
 \end{frame}
@@ -360,13 +361,13 @@ Homework 3}
       \end{ownbox}
     \end{column}
     \begin{column}{0.49\textwidth}
-      \begin{ownbox}{Experiment 2}{group S1 of the paper, M1 and M2}
+      \begin{ownbox}{Experiment 2}{groups S1--S3 of the paper, M1 and M2}
         \scriptsize
         \begin{itemize}
-          \item \textbf{54 instances}, $m=100$: $n\in\{5,10,15\}$ $\times$ 3 values of $R$ $\times$ 2 $M_i$ variants $\times$ 3 budgets; seed 1.
+          \item \textbf{162 instances}: $m=100$, 200, 300 (S1, S2, S3), each with $n\in\{5,10,15\}$ $\times$ 3 values of $R$ $\times$ 2 $M_i$ variants $\times$ 3 budgets; seed 1.
           \item (M3) is excluded: explicit enumeration is limited to $m\le 12$.
           \item Integer model and LP relaxation of M1 and M2; time limit 3600\,s.
-          \item $54\times2\times3=324$ integer runs and 324 LP runs.
+          \item $162\times2\times3=972$ integer runs and 972 LP runs.
         \end{itemize}
       \end{ownbox}
     \end{column}
@@ -519,116 +520,168 @@ Homework 3}
 \end{ownslide}
 
 % =====================================================================
-\section{Experiment 2: group S1}
+\section{Experiment 2: groups S1 to S3}
 % =====================================================================
 
-% ---- 11 ----
+% ---- E2: optimality ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 2}Optimality}
+  \ownband
+  \small
+  \begin{itemize}
+    \item All 972 integer runs (162 instances $\times$ 2 models $\times$ 3 solvers) and all 972 LP runs end with status optimal.
+          No run reaches the time limit of 3600\,s; the longest takes 1\,145\,s.
+    \item In 969 of the 972 integer runs the final MIP gap is zero. Three runs on S3 with $n=15$, $R=15\%$ and the $\ell$ variant stop
+          at the default relative tolerance of the solver ($0.01\%$), one unit away from the bound:
+          \begin{itemize}\footnotesize
+            \item HiGHS on (M1), two instances: the incumbent is the optimum, but the bound is not closed;
+            \item Gurobi on (M2), one instance: the incumbent is 10\,898, while the other five runs prove 10\,899.
+          \end{itemize}
+    \item For every other instance, the six runs return the same objective value. The optimum ranges from 488 to 3\,446 in S1,
+          1\,477 to 6\,455 in S2 and 1\,227 to 11\,024 in S3.
+    \item As reference optimum $z^{\star}$ of each instance we take the best objective over its six runs. In every run,
+          $z^{\star}\le z^{LP}_{(M2)}\le z^{LP}_{(M1)}$, and the LP values agree across solvers (largest difference $1.2\times10^{-11}$).
+  \end{itemize}
+  \begin{remarkbox}[interpretation]
+    The three runs above are correct under the default settings of the solvers. They show that status optimal means optimal within a
+    tolerance, which becomes visible when the objective exceeds $10^4$.
+  \end{remarkbox}
+\end{frame}
+\end{ownslide}
+
+% ---- E2: LP bounds ----
 \begin{ownslide}
 \begin{frame}{\ownbadge{Experiment 2}LP bounds}
   \ownband
   \vspace{-4pt}
-  \small
-  \begin{itemize}
-    \item All 324 integer runs and 324 LP runs end with proven optimality; the final MIP gap is $0$.
-          The optimum of each instance is the same for both models and the three solvers (largest difference $10^{-11}$); it ranges from 488 to 3\,446.
-    \item LP gaps are again identical across solvers. M1: mean 44.36\%, range 29.89--65.30\%. M2: mean 1.18\%, range 0.00--7.08\%,
-          with a zero gap in 17 of 54 instances.
-  \end{itemize}
   \centering
-  \includegraphics[width=0.86\textwidth]{exp2_lp_gap.pdf}\\[-2pt]
-  \figcap{LP gap of M1 (left) and M2 (right) on the 54 S1 instances, by $n$ and $M_i$ variant. The vertical scales differ.}
+  \includegraphics[width=0.74\textwidth]{exp2_lp_gap.pdf}\\[-2pt]
+  \figcap{LP gap $100\,(z^{LP}-z^{\star})/z^{\star}$ of M1 (left) and M2 (right) on the 162 instances, by group and $M_i$ variant. The vertical scales differ.}
 
+  \vspace{2pt}
+  \scriptsize
+  \begin{tabular}{@{}l|rrr|rrrr@{}}
+    \toprule
+    & \multicolumn{3}{c|}{M1: LP gap (\%)} & \multicolumn{4}{c}{M2: LP gap (\%)}\\
+    Group & mean & min & max & mean & max & mean, s & mean, $\ell$\\
+    \midrule
+    S1 ($m=100$) & 44.36 & 29.89 & 65.30 & 1.18 & 7.08 & 2.32 & 0.04\\
+    S2 ($m=200$) & 51.61 & 33.14 & 73.09 & 0.87 & 6.90 & 1.66 & 0.08\\
+    S3 ($m=300$) & 52.24 & 31.29 & 78.82 & 1.76 & 11.08 & 3.33 & 0.18\\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{3pt}
   \raggedright\small
-  For (M2), the LP gap is almost zero in the $\ell$ variant (mean 0.03--0.04\% for every $n$) and larger in the s variant
-  (mean 3.44\%, 2.75\%, 0.77\% for $n=5,10,15$).
+  \begin{itemize}
+    \item (M2) closes the LP gap completely in 17, 15 and 17 of the 54 instances of S1, S2 and S3; (M1) never does.
+    \item The gap of (M2) is concentrated in the s variant of $M_i$; no monotone trend with $m$ is visible across the three groups.
+  \end{itemize}
 \end{frame}
 \end{ownslide}
 
-% ---- 12 ----
+% ---- E2: solve times ----
 \begin{ownslide}
 \begin{frame}{\ownbadge{Experiment 2}Solve times}
   \ownband
   \vspace{-4pt}
-  \begin{columns}[c]
-    \begin{column}{0.54\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{exp2_time_boxplot.pdf}\\[-2pt]
-      \raggedright\figcap{Integer solve time of M1 and M2 per solver on the 54 S1 instances. Logarithmic scale.}
-    \end{column}
-    \begin{column}{0.44\textwidth}
-      \centering\scriptsize
-      \begin{tabular}{@{}llrrrr@{}}
-        \toprule
-        & & \multicolumn{4}{c}{integer time (s), 54 instances}\\
-        \cmidrule(lr){3-6}
-        Solver & Model & median & mean & max & total\\
-        \midrule
-        HiGHS  & M1 & 5.68 & 8.85 & 36.71 & 477.8\\
-               & M2 & 1.07 & 6.58 & 33.85 & 355.5\\
-        \midrule
-        Gurobi & M1 & 0.34 & 0.49 & 1.49 & 26.6\\
-               & M2 & 0.20 & 0.28 & 1.14 & 15.3\\
-        \midrule
-        CPLEX  & M1 & 0.68 & 0.78 & 2.95 & 42.2\\
-               & M2 & 0.35 & 0.46 & 1.31 & 24.5\\
-        \bottomrule
-      \end{tabular}
-    \end{column}
-  \end{columns}
-  \vspace{4pt}
-  \small
+  \centering
+  \includegraphics[width=0.74\textwidth]{exp2_time_boxplot.pdf}\\[-2pt]
+  \figcap{Integer solve time of M1 and M2 per solver, for each group (54 instances per box). Logarithmic scale.}
+
+  \vspace{2pt}
+  \scriptsize
+  \begin{tabular}{@{}ll|rr|rr|rr@{}}
+    \toprule
+    & & \multicolumn{2}{c|}{S1 ($m=100$)} & \multicolumn{2}{c|}{S2 ($m=200$)} & \multicolumn{2}{c}{S3 ($m=300$)}\\
+    Solver & Model & median & max & median & max & median & max\\
+    \midrule
+    HiGHS  & M1 & 5.68 & 36.71 & 7.33 & 193.25 & 22.65 & 1\,128.02\\
+           & M2 & 1.07 & 33.85 & 2.32 & 122.02 & 7.97 & 139.14\\
+    Gurobi & M1 & 0.34 & 1.49 & 0.57 & 3.76 & 1.21 & 10.02\\
+           & M2 & 0.20 & 1.14 & 0.36 & 5.06 & 0.56 & 6.50\\
+    CPLEX  & M1 & 0.68 & 2.95 & 0.74 & 10.59 & 0.99 & 1\,145.38\\
+           & M2 & 0.35 & 1.31 & 0.60 & 6.21 & 0.72 & 7.15\\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{3pt}
+  \raggedright\small
   \begin{itemize}
-    \item Every instance is solved in less than 37\,s; with Gurobi and CPLEX, in less than 3\,s.
-    \item Gurobi is the fastest solver in 47 of 54 instances for (M1) and in 46 of 54 for (M2); CPLEX in the others.
-          Geometric mean time ratio with respect to Gurobi: CPLEX 1.85 (M1) and 1.92 (M2); HiGHS 12.39 (M1) and 8.67 (M2).
-    \item Instances with the s variant of $M_i$ take longer: with HiGHS on (M2), mean 4.27--20.25\,s against 0.16--1.88\,s for $\ell$.
+    \item Gurobi is the fastest solver in most instances (M2: 46, 50 and 43 of 54 in S1, S2, S3); CPLEX in the others.
+    \item Geometric mean time relative to Gurobi on (M2): HiGHS 8.67, 6.84, 8.66; CPLEX 1.92, 1.69, 1.29 in S1, S2, S3.
   \end{itemize}
 \end{frame}
 \end{ownslide}
 
-% ---- 13 ----
+% ---- E2: effect of m ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 2}Effect of the number of customers}
+  \ownband
+  \vspace{-4pt}
+  \centering
+  \includegraphics[width=0.74\textwidth]{exp2_time_growth.pdf}\\[-2pt]
+  \figcap{Mean (a) and maximum (b) integer solve time over the 54 instances of each group, per solver and model. Logarithmic scale.}
+
+  \vspace{2pt}
+  \raggedright\footnotesize
+  \begin{itemize}
+    \item From S1 to S3, the mean time of (M2) grows from 0.28 to 1.32\,s with Gurobi, from 0.45 to 1.39\,s with CPLEX and from 6.58 to 24.82\,s with HiGHS.
+    \item The maximum grows much faster for (M1): the two longest runs of the experiment are (M1) on S3, with CPLEX (1\,145\,s) and HiGHS (1\,128\,s).
+          With (M2), no run exceeds 139\,s (HiGHS) or 7.2\,s (Gurobi, CPLEX).
+    \item The s variant of $M_i$ remains the harder case: mean (M2) time with HiGHS 12.30, 19.22, 42.71\,s for s against 0.87, 1.36, 6.93\,s for $\ell$.
+  \end{itemize}
+  \begin{remarkbox}[interpretation]
+    \footnotesize With three values of $m$ and one seed, these curves describe this sample only and do not support an extrapolation to larger groups.
+  \end{remarkbox}
+\end{frame}
+\end{ownslide}
+
+% ---- E2: M1 versus M2 ----
 \begin{ownslide}
 \begin{frame}{\ownbadge{Experiment 2}M1 versus M2}
   \ownband
   \vspace{-4pt}
   \centering
-  \includegraphics[width=0.76\textwidth]{exp2_paired_time.pdf}
+  \includegraphics[width=0.66\textwidth]{exp2_paired_time.pdf}\\[-2pt]
+  \figcap{Integer solve time of M2 against M1 for each instance, per solver and group (logarithmic scales). Points below the diagonal are instances solved faster with M2.}
 
-  \raggedright\small
-  \figcap{Integer solve time of M2 against M1 for each S1 instance, per solver (logarithmic scales). Points below the diagonal are instances solved faster with M2.}
-
-  \centering\footnotesize
-  \begin{tabular}{@{}lccc@{}}
+  \vspace{2pt}
+  \scriptsize
+  \begin{tabular}{@{}l|ccc|ccc@{}}
     \toprule
-    & HiGHS & Gurobi & CPLEX\\
+    & \multicolumn{3}{c|}{instances where M2 is faster} & \multicolumn{3}{c}{geometric mean of time(M2)/time(M1)}\\
+    Group & HiGHS & Gurobi & CPLEX & HiGHS & Gurobi & CPLEX\\
     \midrule
-    Instances where M2 is faster & 35/54 & 44/54 & 36/54\\
-    Geometric mean of time(M2)/time(M1) & 0.46 & 0.66 & 0.69\\
+    S1 & 35/54 & 44/54 & 36/54 & 0.46 & 0.66 & 0.69\\
+    S2 & 43/54 & 41/54 & 34/54 & 0.31 & 0.59 & 0.65\\
+    S3 & 32/54 & 27/54 & 21/54 & 0.44 & 0.71 & 0.75\\
     \bottomrule
   \end{tabular}
 
   \vspace{2pt}
   \raggedright
   \begin{remarkbox}[interpretation]
-    \footnotesize (M2) is faster on average with every solver, but not on every instance. The modern solvers presumably strengthen (M1) by their own presolve and cuts,
-    which would explain why its LP gap of about 44\% translates into much smaller differences in solve time.
-    The logs needed to confirm this were not recorded.
+    \footnotesize (M2) is faster on average in every group and with every solver, but not on every instance; in S3 it is faster in only 27 (Gurobi) and 21 (CPLEX)
+    of 54 instances, although its worst case is much shorter. The solvers presumably strengthen (M1) by presolve and cuts;
+    the logs needed to confirm this were not recorded.
   \end{remarkbox}
 \end{frame}
 \end{ownslide}
 
-% ---- 15 ----
+% ---- E2: conclusions ----
 \begin{ownslide}
 \begin{frame}{\ownbadge{Experiment 2}Conclusions}
   \ownband
   \begin{enumerate}
-    \item \textbf{Group S1 is easy for current solvers.} All 54 instances are solved to proven optimality with both formulations and all three solvers;
-          the largest time is 36.7\,s (HiGHS) and below 3\,s with Gurobi and CPLEX.
-    \item \textbf{(M2) dominates (M1) in bound quality}: mean LP gap 1.18\% against 44.36\%, consistent with Experiment 1 and with Proposition 3.
-    \item \textbf{(M2) is also faster on average}, with a geometric mean time ratio of 0.46 to 0.69 depending on the solver, but it is not faster on every instance.
-    \item \textbf{The choice of solver matters more than the choice between M1 and M2 at $m=100$}: HiGHS is about 9 to 12 times slower than Gurobi
-          in geometric mean, while CPLEX is about 2 times slower.
-    \item \textbf{The s variant of $M_i$ is the harder case}: for (M2), it has the larger LP gaps and, with every solver, the longer mean solve times.
+    \item \textbf{Groups S1 to S3 are solvable to optimality on a laptop.} All 162 instances are solved with both formulations and all three solvers,
+          within the default tolerance; the longest run takes 1\,145\,s.
+    \item \textbf{(M2) dominates (M1) in bound quality} in every group: mean LP gap 0.87--1.76\% against 44.36--52.24\%, consistent with Experiment 1 and Proposition 3.
+    \item \textbf{(M2) is faster on average and more robust.} Its geometric mean time ratio to (M1) is 0.31--0.75, and its worst case stays at 139\,s,
+          against about 1\,100\,s for (M1) on S3.
+    \item \textbf{The solver matters more than the formulation in the typical case}: HiGHS is about 7 to 9 times slower than Gurobi on (M2);
+          CPLEX is 1.3 to 1.9 times slower, with the difference shrinking as $m$ grows.
+    \item \textbf{The s variant of $M_i$ is the harder case} in all groups: larger LP gaps of (M2) and longer solve times.
   \end{enumerate}
 \end{frame}
 \end{ownslide}
@@ -648,14 +701,14 @@ Homework 3}
           the agreement of 3 formulations $\times$ 3 solvers on every optimum.
     \item The empirical ordering of the LP bounds matches the theory: (M3) is the strongest and (M1) by far the weakest. The disaggregated linking
           constraints (8) account for most of the improvement.
-    \item For the instance sizes tested, the compact model (M2) with a commercial MIP solver suffices for proven optimality: at most 1.3\,s per instance with Gurobi or CPLEX.
+    \item Up to $m=300$, the compact model (M2) with a commercial MIP solver suffices for optimality within the default tolerance: at most 7.2\,s per instance with Gurobi or CPLEX.
   \end{itemize}
   \vspace{4pt}
   \textbf{Limitations}
   \begin{itemize}
     \item (M3) is solved only by explicit enumeration ($m\le12$); column generation and branch-and-price, which make (M3) usable for $m=100$, are not implemented.
-    \item Only group S1 was run; S2, S3 and the larger groups, where the paper reports failures of the exact methods, remain untested.
-    \item The generator has two documented deviations and shares data across instances; one seed only per configuration.
+    \item Only groups S1 to S3 were run; the larger groups M1, M2 and L ($m=1\,000$ to $10\,000$) remain untested.
+    \item The generator has two documented deviations and shares data across instances and groups; one seed only per configuration.
     \item Times are end-to-end Pyomo times under different interfaces, with default solver settings and no solver logs or node counts.
   \end{itemize}
 \end{frame}
