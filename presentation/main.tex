@@ -104,7 +104,7 @@
   {\end{beamerboxesrounded}}
 \newenvironment{remarkbox}[1][]{\begin{ownbox}{Remark}{#1}}{\end{ownbox}}
 \newenvironment{findingbox}[1][]{\begin{ownbox}{Finding}{#1}}{\end{ownbox}}
-\newcommand{\ownbadge}[1]{{\setlength{\fboxsep}{2.5pt}\colorbox{tecnicoblue}{\textcolor{white}{\bfseries #1}}}\ }
+\newcommand{\ownbadge}[1]{#1: }
 \newcommand{\ownband}{\nointerlineskip\vbox to 0pt{%
   \begin{tikzpicture}[remember picture,overlay]
     \fill[tecnicoblue] ([yshift=-1.12cm]current page.north west) rectangle ([xshift=0.18cm,yshift=0.42cm]current page.south west);
