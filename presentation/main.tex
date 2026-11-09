@@ -617,47 +617,6 @@ Homework 3}
 \end{frame}
 \end{ownslide}
 
-% ---- 14 ----
-\begin{ownslide}
-\begin{frame}{\ownbadge{Experiment 2}Comparison with the paper}
-  \ownband
-  \vspace{-8pt}
-  \scriptsize
-  \centering
-  \renewcommand{\arraystretch}{1.05}
-  \begin{tabular}{@{}cc|cc|cccc@{}}
-    \toprule
-    & & \multicolumn{2}{c|}{LP gap of (M2), mean (\%)} & \multicolumn{4}{c}{integer time of (M2), mean (s)}\\
-    $n$ & $M_i$ & paper \cite{tallanobibon2011} & this study & paper, CPLEX 10.2 & HiGHS & Gurobi & CPLEX 22.2\\
-    \midrule
-    5  & s      & 8.33 & 3.44 & 57.39 & 4.27  & 0.14 & 0.43\\
-    5  & $\ell$ & 6.51 & 0.04 & 3.91  & 0.16  & 0.07 & 0.23\\
-    10 & s      & 3.11 & 2.75 & 27.90 & 20.25 & 0.43 & 0.80\\
-    10 & $\ell$ & 3.26 & 0.03 & 6.05  & 0.56  & 0.13 & 0.35\\
-    15 & s      & 2.96 & 0.77 & 22.57 & 12.38 & 0.62 & 0.55\\
-    15 & $\ell$ & 1.28 & 0.04 & 3.22  & 1.88  & 0.31 & 0.37\\
-    \bottomrule
-  \end{tabular}
-
-  \vspace{2pt}
-  \raggedright\scriptsize
-  Paper values: Table 4 (LP gap of the basic formulation) and Table 5 (CPLEX on the basic formulation, which the text identifies as (M2));
-  each cell is the mean of 9 instances, as here. Paper hardware: Pentium 2.8\,GHz, 1.49\,GB RAM.
-
-  \vspace{1pt}
-  \footnotesize
-  \begin{itemize}
-    \item \textbf{Agreement:} in both studies, instances with the s variant of $M_i$ are the harder ones, and all S1 instances are solved to optimality with (M2).
-    \item \textbf{Difference:} the LP gap of (M2) is smaller here, especially for the $\ell$ variant (0.03--0.04\% against 1.28--6.51\%).
-  \end{itemize}
-  \begin{remarkbox}[caution]
-    \footnotesize The instances are not the same: the paper's files are no longer available, the generator deviates in $O_j$ and in the random budget,
-    and the instances share data across $R$ and $M_i$ variants. The times also differ in hardware and solver version by more than 15 years.
-    The comparison therefore shows only qualitative agreement.
-  \end{remarkbox}
-\end{frame}
-\end{ownslide}
-
 % ---- 15 ----
 \begin{ownslide}
 \begin{frame}{\ownbadge{Experiment 2}Conclusions}
@@ -669,8 +628,7 @@ Homework 3}
     \item \textbf{(M2) is also faster on average}, with a geometric mean time ratio of 0.46 to 0.69 depending on the solver, but it is not faster on every instance.
     \item \textbf{The choice of solver matters more than the choice between M1 and M2 at $m=100$}: HiGHS is about 9 to 12 times slower than Gurobi
           in geometric mean, while CPLEX is about 2 times slower.
-    \item \textbf{The s variant of $M_i$ is the harder case}, as in the paper; the qualitative conclusions of the paper for S1 are reproduced,
-          though not its exact numbers.
+    \item \textbf{The s variant of $M_i$ is the harder case}: for (M2), it has the larger LP gaps and, with every solver, the longer mean solve times.
   \end{enumerate}
 \end{frame}
 \end{ownslide}
