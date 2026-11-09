@@ -91,6 +91,9 @@ Uma seção independente executa S2 (`m = 200`) com a mesma grade experimental
 de 54 instâncias, salvando-as em `instances/S2/` e os resultados em `results/S2_*`.
 Ela executa M1/M2 inteiros e suas relaxações LP com os três solvers; reexecutá-la
 substitui somente os arquivos de S2, sem reexecutar S1.
+Outra seção executa S3 (`m = 300`) com a mesma grade de 54 instâncias, em
+`instances/S3/` e `results/S3_*`, sem reexecutar nem substituir os resultados
+de S1/S2. O maior tamanho pode levar bastante tempo para resolver.
 Durante essa execução, o notebook informa a conclusão de cada instância.
 O limite é de 3600 segundos por resolução inteira ou LP; somente esse limite é
 configurado explicitamente, e as demais opções ficam nos padrões dos solvers.
