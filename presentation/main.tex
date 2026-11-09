@@ -111,6 +111,8 @@
   \end{tikzpicture}\vss}}
 \newenvironment{ownslide}{\setbeamercolor{background canvas}{bg=tecnicoblue!4}}{}
 
+\newcounter{figno}
+\newcommand{\figcap}[1]{\refstepcounter{figno}{\scriptsize\textbf{Figure~\thefigno.} #1\par}}
 % ---------- notation helpers ----------
 \newcommand{\ok}{\textcolor{slate}{\checkmark}}
 \newcommand{\dev}{\textcolor{bluetext}{\bfseries deviation}}
@@ -409,7 +411,8 @@ Homework 3}
   \begin{columns}[c]
     \begin{column}{0.55\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{exp1_lp_gap.pdf}
+      \includegraphics[width=\linewidth]{exp1_lp_gap.pdf}\\[-2pt]
+      \raggedright\figcap{LP gap of M1, M2 and M3 on the 50 instances of Experiment 1; one point per instance, identical for the three solvers.}
     \end{column}
     \begin{column}{0.43\textwidth}
       \centering\footnotesize
@@ -437,7 +440,8 @@ Homework 3}
   \ownband
   \vspace{-4pt}
   \centering
-  \includegraphics[width=0.86\textwidth]{exp1_columns_time.pdf}
+  \includegraphics[width=0.86\textwidth]{exp1_columns_time.pdf}\\[-2pt]
+  \figcap{(a) Admissible columns of M3 per instance, as a function of $m$. (b) Integer solve time of M3 against its number of columns, per solver. Logarithmic scales.}
 
   \raggedright\small
   \begin{itemize}
@@ -457,8 +461,8 @@ Homework 3}
   \begin{columns}[c]
     \begin{column}{0.52\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{exp1_time_by_solver.pdf}\\
-      \scriptsize Bars: median over 50 instances; marks: maximum.
+      \includegraphics[width=\linewidth]{exp1_time_by_solver.pdf}\\[-2pt]
+      \raggedright\figcap{Integer solve time by solver and formulation in Experiment 1: bars show the median over 50 instances, marks the maximum. Logarithmic scale.}
     \end{column}
     \begin{column}{0.46\textwidth}
       \centering\scriptsize
@@ -483,7 +487,7 @@ Homework 3}
       \end{tabular}
     \end{column}
   \end{columns}
-  \vspace{4pt}
+  \vspace{2pt}
   \small
   \begin{itemize}
     \item The medians are similar across formulations. On the 6 instances with at least 1\,000 columns, the median time of (M3) is
@@ -531,7 +535,8 @@ Homework 3}
           with a zero gap in 17 of 54 instances.
   \end{itemize}
   \centering
-  \includegraphics[width=0.86\textwidth]{exp2_lp_gap.pdf}
+  \includegraphics[width=0.86\textwidth]{exp2_lp_gap.pdf}\\[-2pt]
+  \figcap{LP gap of M1 (left) and M2 (right) on the 54 S1 instances, by $n$ and $M_i$ variant. The vertical scales differ.}
 
   \raggedright\small
   For (M2), the LP gap is almost zero in the $\ell$ variant (mean 0.03--0.04\% for every $n$) and larger in the s variant
@@ -547,7 +552,8 @@ Homework 3}
   \begin{columns}[c]
     \begin{column}{0.54\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{exp2_time_boxplot.pdf}
+      \includegraphics[width=\linewidth]{exp2_time_boxplot.pdf}\\[-2pt]
+      \raggedright\figcap{Integer solve time of M1 and M2 per solver on the 54 S1 instances. Logarithmic scale.}
     \end{column}
     \begin{column}{0.44\textwidth}
       \centering\scriptsize
@@ -586,10 +592,10 @@ Homework 3}
   \ownband
   \vspace{-4pt}
   \centering
-  \includegraphics[width=0.80\textwidth]{exp2_paired_time.pdf}
+  \includegraphics[width=0.76\textwidth]{exp2_paired_time.pdf}
 
   \raggedright\small
-  Each point is one instance; points below the diagonal are instances solved faster with (M2).
+  \figcap{Integer solve time of M2 against M1 for each S1 instance, per solver (logarithmic scales). Points below the diagonal are instances solved faster with M2.}
 
   \centering\footnotesize
   \begin{tabular}{@{}lccc@{}}
