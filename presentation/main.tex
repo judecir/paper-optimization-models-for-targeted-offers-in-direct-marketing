@@ -180,7 +180,7 @@ Homework 2}
 \begin{frame}{\ownbadge{Implementation}Instance generation}
   \ownband
   \vspace{-6pt}
-  \footnotesize Generation rules of Section~5.1 of \cite{tallanobibon2011}, compared with \texttt{generator.py}.
+  \footnotesize Generation rules of Section~5.1 of \cite{tallanobibon2011}, compared with the implementation.
   Notation: $C_j=\sum_i c_{ij}$, $\bar M=\sum_i M_i/n$, $F_j=\frac{O_j}{m(1+R)}\sum_i\big[p_{ij}-(1+R)c_{ij}\big]$.\\[2pt]
   \scriptsize
   \renewcommand{\arraystretch}{1.12}
@@ -262,7 +262,7 @@ Homework 2}
     \item In the paper, (M2) is the formulation solved with CPLEX 10.2.
   \end{itemize}
   \begin{remarkbox}[implementation]
-    \texttt{models.py} keeps $y_j\in\{0,1\}$ in the integer version of (M2). By Proposition 3 this does not change the optimal value,
+    The implementation keeps $y_j\in\{0,1\}$ in the integer version of (M2). By Proposition 3 this does not change the optimal value,
     and the LP relaxation is the same, since $x$ and $y$ are relaxed to $[0,1]$ in both cases.
   \end{remarkbox}
 \end{frame}
@@ -289,7 +289,7 @@ Homework 2}
     \item The number of columns grows as $O(n\,2^m)$. The paper solves (M3) by column generation within branch-and-price.
   \end{itemize}
   \begin{remarkbox}[implementation]
-    \texttt{setcover.py} enumerates all admissible columns explicitly and is therefore restricted to $m\le 12$.
+    The implementation enumerates all admissible columns explicitly and is therefore restricted to $m\le 12$.
     Branch-and-price is not implemented. The solution of (M3) is mapped back to $(x,y)$ and checked against (2)--(7).
   \end{remarkbox}
 \end{frame}
