@@ -1,0 +1,696 @@
+% =====================================================================
+% Optimization Models for Targeted Offers in Direct Marketing:
+% implementation and computational study
+% Paper: Talla Nobibon, Leus, Spieksma (2011), EJOR 210, 670-683
+%
+% Compile: xelatex main.tex (run twice; uses Source Sans 3 if installed)
+% Logo: place logo-tecnico.jpg in this folder.
+% Figures: python presentation/scripts/make_figures.py (from the repository root)
+%
+% Convention used throughout the slides:
+%   * slate/grey text, blocks and tables      = content taken from the paper [1];
+%   * Tecnico Blue boxes and slides with a blue badge, blue left band and blue
+%     tint = the presenter's implementation, experiments and interpretation.
+% =====================================================================
+\documentclass[10pt,aspectratio=169]{beamer}
+
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \IfFileExists{sourcesanspro.sty}{\usepackage[default]{sourcesanspro}}{\IfFileExists{lmodern.sty}{\usepackage{lmodern}}{}}
+\else
+  \usepackage{fontspec}
+  \IfFontExistsTF{Source Sans 3}{\setsansfont{Source Sans 3}}{%
+    \IfFontExistsTF{Source Sans Pro}{\setsansfont{Source Sans Pro}}{}}
+\fi
+\usefonttheme{professionalfonts}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\graphicspath{{figures/}}
+
+% ---------- official colours ----------
+\definecolor{tecnicoblue}{HTML}{009DE0}
+\definecolor{slate}{HTML}{46555F}
+\definecolor{lightgrey}{HTML}{D2D3D4}
+\colorlet{bluetext}{tecnicoblue!75!black}
+
+% ---------- classic Beamer theme (Madrid) with Tecnico colours ----------
+\usetheme{Madrid}
+\useinnertheme{rounded}
+\useoutertheme{infolines}
+\setbeamercolor{structure}{fg=tecnicoblue}
+\setbeamercolor{normal text}{fg=slate!90!black,bg=white}
+\setbeamercolor{palette primary}{bg=tecnicoblue,fg=white}
+\setbeamercolor{palette secondary}{bg=slate,fg=white}
+\setbeamercolor{palette tertiary}{bg=slate!85!black,fg=white}
+\setbeamercolor{palette quaternary}{bg=slate!85!black,fg=white}
+\setbeamercolor{frametitle}{bg=white,fg=slate!95!black}
+\setbeamercolor{title rule}{bg=tecnicoblue}
+\setbeamercolor{title}{bg=tecnicoblue,fg=white}
+\setbeamercolor{subtitle}{fg=white}
+\setbeamercolor{alerted text}{fg=slate!95!black}
+\setbeamercolor{block title}{bg=slate,fg=white}
+\setbeamercolor{block body}{bg=lightgrey!30,fg=slate!90!black}
+\setbeamercolor{item projected}{bg=slate,fg=white}
+\setbeamercolor{item}{fg=slate}
+\setbeamercolor{subitem}{fg=slate!80}
+\setbeamercolor{section number projected}{bg=slate,fg=white}
+\setbeamercolor{section in toc}{fg=slate!90!black}
+\setbeamerfont{frametitle}{series=\bfseries}
+\setbeamerfont{title}{series=\bfseries}
+\setbeamerfont{author}{size=\normalsize}
+\setbeamerfont{institute}{size=\scriptsize}
+\setbeamerfont{date}{size=\footnotesize}
+\setbeamerfont{block title}{series=\bfseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{frametitle continuation}{}
+\setbeamerfont{footnote}{size=\scriptsize}
+\setbeamercolor{footnote}{fg=slate}
+\setbeamercolor{footnote mark}{fg=slate}
+\setbeamertemplate{bibliography item}{[\theenumiv]}
+\setbeamercolor{bibliography entry author}{fg=slate!90!black}
+\setbeamercolor{bibliography entry title}{fg=slate!90!black}
+\setbeamercolor{bibliography entry location}{fg=slate!70}
+\setbeamercolor{bibliography entry note}{fg=slate!70}
+\setbeamertemplate{blocks}[rounded][shadow=true]
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{enumerate items}[circle]
+\setbeamertemplate{sections/subsections in toc}[circle]
+
+% ---------- frame title: white bar, title, logo, blue rule ----------
+\newcommand{\tecnicologo}[1]{\IfFileExists{logo-tecnico.jpg}{\includegraphics[height=#1]{logo-tecnico.jpg}}{}}
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,ht=0.80cm,dp=0.25cm,leftskip=0.35cm,rightskip=0.35cm]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle\hfill
+    \raisebox{-0.10cm}{\tecnicologo{0.58cm}}%
+  \end{beamercolorbox}%
+  \par\nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,ht=1.5pt,dp=0pt]{title rule}\end{beamercolorbox}%
+  \par\vspace{2pt}}
+
+% ---------- presenter's material: always in Tecnico Blue ----------
+\setbeamercolor{own title}{bg=tecnicoblue,fg=white}
+\setbeamercolor{own body}{bg=tecnicoblue!7,fg=slate!95!black}
+\newenvironment{ownbox}[2]{%
+  \begin{beamerboxesrounded}[upper=own title,lower=own body,shadow=false]%
+    {\small\bfseries #1\if\relax\detokenize{#2}\relax\else{\normalfont\itshape\ (#2)}\fi}\small}%
+  {\end{beamerboxesrounded}}
+\newenvironment{remarkbox}[1][]{\begin{ownbox}{Remark}{#1}}{\end{ownbox}}
+\newenvironment{findingbox}[1][]{\begin{ownbox}{Finding}{#1}}{\end{ownbox}}
+\newcommand{\ownbadge}[1]{{\setlength{\fboxsep}{2.5pt}\colorbox{tecnicoblue}{\textcolor{white}{\bfseries #1}}}\ }
+\newcommand{\ownband}{\nointerlineskip\vbox to 0pt{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[tecnicoblue] ([yshift=-1.12cm]current page.north west) rectangle ([xshift=0.18cm,yshift=0.42cm]current page.south west);
+  \end{tikzpicture}\vss}}
+\newenvironment{ownslide}{\setbeamercolor{background canvas}{bg=tecnicoblue!4}}{}
+
+% ---------- notation helpers ----------
+\newcommand{\ok}{\textcolor{slate}{\checkmark}}
+\newcommand{\dev}{\textcolor{bluetext}{\bfseries deviation}}
+
+\title[Targeted offers in direct marketing]{Optimization Models for Targeted Offers in Direct Marketing}
+\subtitle{Implementation and computational study of the exact formulations\\[3pt]
+\small after F.~Talla Nobibon, R.~Leus, F.C.R.~Spieksma, \emph{EJOR} 210 (2011) 670--683}
+\author[J.~Cavalcante (ist431224)]{Judecir Cavalcante\\ {\small ist431224}}
+\institute[DEG, IST]{PhD Programme in Engineering and Management\\
+Department of Engineering and Management\\
+Instituto Superior T\'ecnico, Universidade de Lisboa}
+\date[Homework 2]{Optimization and Applications\\
+Prof.~Jos\'e Rui Figueira\\
+Homework 2}
+
+\begin{document}
+
+% =====================================================================
+% Cover and outline (not counted)
+% =====================================================================
+\begin{frame}[plain,noframenumbering]
+  \IfFileExists{logo-tecnico.jpg}{\begin{center}\tecnicologo{1.1cm}\end{center}\vspace{-6pt}}{}
+  \vspace{-6pt}
+  \titlepage
+  \vspace{-10pt}
+  \begin{center}
+    \scriptsize\itshape Problem and models follow \cite{tallanobibon2011}.
+    {\color{tecnicoblue}\upshape\bfseries Blue} marks the presenter's implementation, experiments and interpretation.
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Outline}
+  \tableofcontents
+\end{frame}
+
+% =====================================================================
+\section{Problem and data}
+% =====================================================================
+
+% ---- 1 ----
+\begin{frame}{Problem: Targeted offers in a retention campaign}
+  \vspace{-4pt}
+  \small
+  \begin{itemize}
+    \item A \textbf{direct-marketing campaign} offers products to selected customers. The paper addresses
+          \emph{retention} campaigns, which seek additional revenue from existing customers of a bank
+          \cite{tallanobibon2011}.
+    \item Response models estimate the expected return $p_{ij}=r_{ij}\,DFV_{ij}$ of offering product $j$ to customer $i$
+          (acceptance probability times value to the firm); these estimates are \textbf{inputs} of the model.
+  \end{itemize}
+  \begin{block}{Product targeting problem}
+    \small Decide which products to offer to which customers so as to maximize the expected net profit of the campaign,
+    subject to four business requirements:
+    \begin{enumerate}
+      \item a corporate \textbf{hurdle rate} $R$ on the return on investment, first suggested by Cohen \cite{cohen2004};
+      \item a \textbf{budget} $B_j$ per product, because each business unit funds its own product;
+      \item a maximum number $M_i$ of \textbf{offers per customer};
+      \item a \textbf{minimum-quantity commitment} (MQC) $O_j$: a product used in the campaign is offered to at least $O_j$ customers.
+    \end{enumerate}
+    A \textbf{fixed cost} $f_j$ is incurred whenever product $j$ is used.
+  \end{block}
+  \vspace{-4pt}\footnotesize The problem is strongly NP-hard; even finding a solution with positive profit is NP-hard \cite{tallanobibon2011}.
+\end{frame}
+
+% ---- 2 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Implementation}Parameters and instance generation}
+  \ownband
+  \vspace{-6pt}
+  \footnotesize Generation rules of Section~5.1 of \cite{tallanobibon2011}, compared with \texttt{generator.py}.
+  Notation: $C_j=\sum_i c_{ij}$, $\bar M=\sum_i M_i/n$, $F_j=\frac{O_j}{m(1+R)}\sum_i\big[p_{ij}-(1+R)c_{ij}\big]$.\\[2pt]
+  \scriptsize
+  \renewcommand{\arraystretch}{1.12}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.65cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{4.1cm} >{\raggedright\arraybackslash}p{4.3cm} l@{}}
+    \toprule
+    \textbf{Parameter} & \textbf{Meaning} & \textbf{Rule in the paper} & \textbf{Implementation} & \textbf{Check}\\
+    \midrule
+    $c_{ij}$ & cost of an offer & integer, uniform in $\{1,2,3\}$ & same & \ok\\
+    $p_{ij}$ & return of an offer & integer, uniform in $\{0,\dots,16\}$ & same & \ok\\
+    $R$ & hurdle rate & $5\%$, $10\%$ or $15\%$ & same & \ok\\
+    $m$, $n$ & customers, products & S1: $m=100$, $n\in\{5,10,15\}$ & same & \ok\\
+    $M_i$ (s) & offers per customer & uniform in $\{1,\dots,n/5\}$ & uniform in $\{1,\dots,\max(1,\lfloor n/5\rfloor)\}$ & \ok\\
+    $M_i$ ($\ell$) & offers per customer & uniform in $\{\lceil n/3\rceil,\dots,\lceil 2n/3\rceil\}$ & same & \ok\\
+    $O_j$ & MQC & uniform in $\{\lceil\bar M\rceil,\dots,\lceil 2\bar M\rceil\}$ & uniform in $\{\lceil\bar M\rceil,\dots,\lfloor 2\bar M\rfloor\}$ & \dev\\
+    $B_j$ (min, max) & budget & $\lfloor O_jC_j/m\rfloor$ and $\lceil 2\bar M C_j/m\rceil$ & same & \ok\\
+    $B_j$ (random) & budget & integer between $O_jC_j/m$ and $2C_j/n$ & integer between the min and max budgets & \dev\\
+    $f_j$ & fixed cost & integer between $F_j/2$ and $F_j$ (rounding not stated) & $\lceil F_j/2\rceil$ to $\lfloor F_j\rfloor$; fallback if empty & \ok\\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{3pt}
+  \begin{ownbox}{Validation of the generator}{}
+    \scriptsize
+    \begin{itemize}
+      \item Both deviations are documented: the cap on $O_j$ prevents a minimum budget above the maximum,
+            and $2C_j/n$ is treated as a typographical error. All 104 instance files are reproduced exactly; the $f_j$ fallback is never used.
+      \item \textbf{Undocumented:} the random stream restarts with the same seed in every call. For a given $n$, instances with different $R$
+            and $M_i$ variant share $p_{ij}$, $c_{ij}$; with the same $M_i$ variant they also share $M_i$, $O_j$. The paper does not say whether its instances are independent.
+    \end{itemize}
+  \end{ownbox}
+\end{frame}
+\end{ownslide}
+
+% =====================================================================
+\section{Formulations}
+% =====================================================================
+
+% ---- 3 ----
+\begin{frame}{Formulations: Basic model (M1)}
+  \vspace{-4pt}
+  \small
+  Variables: $x_{ij}=1$ if product $j$ is offered to customer $i$; $y_j=1$ if product $j$ is used in the campaign.
+  {\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}\setlength{\jot}{1pt}
+  \begin{align*}
+    \max\ & \sum\nolimits_{i,j}(p_{ij}-c_{ij})\,x_{ij}-\sum\nolimits_{j}f_j\,y_j && (1)\ \text{net profit}\\
+    \text{s.t.}\ & \sum\nolimits_{i,j}p_{ij}x_{ij}\ \ge\ (1+R)\Big[\sum\nolimits_{i,j}c_{ij}x_{ij}+\sum\nolimits_{j}f_j y_j\Big] && (2)\ \text{hurdle rate}\\
+    & \sum\nolimits_{i}c_{ij}x_{ij}\le B_j, && j=1,\dots,n \quad (3)\ \text{budget}\\
+    & \sum\nolimits_{j}x_{ij}\le M_i, && i=1,\dots,m \quad (4)\ \text{offers per customer}\\
+    & \sum\nolimits_{i}x_{ij}\le m\,y_j, && j=1,\dots,n \quad (5)\ \text{linking}\\
+    & \sum\nolimits_{i}x_{ij}\ge O_j\,y_j, && j=1,\dots,n \quad (6)\ \text{MQC}\\
+    & x_{ij},\,y_j\in\{0,1\}. && (7)
+  \end{align*}}
+  \vspace{-4pt}
+  \footnotesize
+  \begin{itemize}
+    \item (M1) has $mn+n$ binary variables and $1+m+3n$ constraints. Constraints (5) and (6) together state that
+          a product is either unused or offered to at least $O_j$ customers.
+    \item In the LP relaxation, (5) $\sum_i x_{ij}\le m\,y_j$ allows $y_j=\sum_i x_{ij}/m$, so the fixed cost $f_j$ is charged only
+          at a rate of only $f_j/m$ per offer. This weakens the LP bound of (M1).
+  \end{itemize}
+\end{frame}
+
+% ---- 4 ----
+\begin{frame}{Formulations: Strengthened model (M2)}
+  \small
+  (M2) replaces the aggregated linking constraints (5) $\sum_i x_{ij}\le m\,y_j$ by their \textbf{disaggregated} form
+  \[
+    x_{ij}\le y_j,\qquad i=1,\dots,m,\ j=1,\dots,n. \qquad (8)
+  \]
+  \begin{block}{Proposition 3 \cite{tallanobibon2011}}
+    The convex hull of the feasible solutions of (M1) equals the convex hull of the solutions satisfying
+    (2)--(4), (6) and (8), with $0\le y_j\le 1$ and $x_{ij}\in\{0,1\}$.
+  \end{block}
+  \begin{itemize}
+    \item Summing (8) over $i$ gives (5); hence every LP solution of (M2) is an LP solution of (M1), and
+          $z^{LP}_{(M2)}\le z^{LP}_{(M1)}$.
+    \item (M2) has the same variables as (M1) and $mn-n$ additional constraints ($mn$ constraints (8) replace the $n$ constraints (5)).
+    \item In the paper, (M2) is the formulation solved with CPLEX 10.2.
+  \end{itemize}
+  \begin{remarkbox}[implementation]
+    \texttt{models.py} keeps $y_j\in\{0,1\}$ in the integer version of (M2). By Proposition 3 this does not change the optimal value,
+    and the LP relaxation is the same, since $x$ and $y$ are relaxed to $[0,1]$ in both cases.
+  \end{remarkbox}
+\end{frame}
+
+% ---- 5 ----
+\begin{frame}{Formulations: Set-covering model (M3)}
+  \vspace{-6pt}
+  \small
+  For each product $j$, let $S_{pj}$, $p=1,\dots,k_j$, be the sets of customers with $|S_{pj}|\ge O_j$ and
+  $\sum_{i\in S_{pj}}c_{ij}\le B_j$. The binary variable $z_{pj}$ equals $1$ if product $j$ is offered exactly to $S_{pj}$.
+  {\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}\setlength{\jot}{1pt}
+  \begin{align*}
+    \max\ & \sum\nolimits_{j}\sum\nolimits_{p}\Big[\sum\nolimits_{i\in S_{pj}}(p_{ij}-c_{ij})-f_j\Big]z_{pj} && (9)\\
+    \text{s.t.}\ & \sum\nolimits_{j}\sum\nolimits_{p}\Big[\sum\nolimits_{i\in S_{pj}}\big(p_{ij}-(1+R)c_{ij}\big)-(1+R)f_j\Big]z_{pj}\ge 0 && (10)\ \text{hurdle rate}\\
+    & \sum\nolimits_{j}\sum\nolimits_{p:\,i\in S_{pj}}z_{pj}\le M_i, \qquad i=1,\dots,m && (11)\ \text{offers per customer}\\
+    & \sum\nolimits_{p=1}^{k_j}z_{pj}\le 1, \qquad j=1,\dots,n && (12)\ \text{one set per product}\\
+    & z_{pj}\in\{0,1\}. && (13)
+  \end{align*}}
+  \vspace{-6pt}
+  \footnotesize
+  \begin{itemize}
+    \item Budget (3) and MQC (6) are built into the definition of the columns. (M3) results from a Dantzig--Wolfe decomposition,
+          and $z^{\star}\le z^{LP}_{(M3)}\le z^{LP}_{(M2)}$ \cite{tallanobibon2011}.
+    \item The number of columns grows as $O(n\,2^m)$. The paper solves (M3) by column generation within branch-and-price.
+  \end{itemize}
+  \begin{remarkbox}[implementation]
+    \texttt{setcover.py} enumerates all admissible columns explicitly and is therefore restricted to $m\le 12$.
+    Branch-and-price is not implemented. The solution of (M3) is mapped back to $(x,y)$ and checked against (2)--(7).
+  \end{remarkbox}
+\end{frame}
+
+% =====================================================================
+\section{Experimental design}
+% =====================================================================
+
+% ---- 6 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Design}Two experiments, three solvers}
+  \ownband
+  \vspace{-4pt}
+  \footnotesize
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \begin{ownbox}{Experiment 1}{small instances, M1, M2 and M3}
+        \scriptsize
+        \begin{itemize}
+          \item \textbf{50 instances}, $m=4,\dots,12$ and $n=2,\dots,5$; $R$, $M_i$ variant and budget variant cycled deterministically;
+                seeds 4000--4052.
+          \item 53 candidates screened with (M1) and HiGHS; 3 with optimum $0$ discarded, because the relative gap is undefined.
+          \item Integer model and LP relaxation of M1, M2, M3; time limit 300\,s.
+          \item $50\times3\times3=450$ integer runs and 450 LP runs.
+        \end{itemize}
+      \end{ownbox}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \begin{ownbox}{Experiment 2}{group S1 of the paper, M1 and M2}
+        \scriptsize
+        \begin{itemize}
+          \item \textbf{54 instances}, $m=100$: $n\in\{5,10,15\}$ $\times$ 3 values of $R$ $\times$ 2 $M_i$ variants $\times$ 3 budgets; seed 1.
+          \item (M3) is excluded: explicit enumeration is limited to $m\le 12$.
+          \item Integer model and LP relaxation of M1 and M2; time limit 3600\,s.
+          \item $54\times2\times3=324$ integer runs and 324 LP runs.
+        \end{itemize}
+      \end{ownbox}
+    \end{column}
+  \end{columns}
+  \vspace{3pt}
+  \begin{ownbox}{Computational environment}{identical for both experiments}
+    \scriptsize
+    \renewcommand{\arraystretch}{1.05}
+    \begin{tabular}{@{}l p{12.6cm}@{}}
+      Machine & Intel Core i7-8565U @ 1.80\,GHz (4 cores, 8 threads), 15.8\,GB RAM, Windows~10 Home (10.0.19045)\\
+      Modelling & Python 3.12.10, Pyomo 6.10.1\\
+      Solvers & HiGHS 1.15.1 (\texttt{highspy}, in-memory \texttt{appsi} interface); Gurobi 13.0.3 (\texttt{gurobipy}, LP-file interface);
+                CPLEX 22.2.0.0 (Interactive Optimizer, LP-file interface). Only the time limit is set; all other parameters keep their default values.\\
+      Time & wall-clock time of the Pyomo \texttt{solve} call: includes the interface overhead,
+             excludes model construction and the enumeration of the M3 columns.\\
+    \end{tabular}
+  \end{ownbox}
+  \vspace{2pt}
+  \scriptsize\textbf{Correctness:} every integer solution is checked against (2)--(7) by an independent function. The 10 unit tests pass,
+  including a 3-customer example with 8 admissible columns and a unique optimum $11$, confirmed by enumerating all $2^{6}=64$ offer matrices.
+\end{frame}
+\end{ownslide}
+
+% =====================================================================
+\section{Experiment 1: small instances}
+% =====================================================================
+
+% ---- 7 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 1}Correctness and strength of the LP bounds}
+  \ownband
+  \vspace{-6pt}
+  \footnotesize
+  \begin{itemize}
+    \item All 450 integer runs and 450 LP runs end with proven optimality. For every instance, the integer optimum is the same
+          for the three formulations and the three solvers (largest difference $6\times10^{-13}$).
+    \item The LP gap $100\,(z^{LP}-z^{\star})/z^{\star}$ is identical across solvers (largest difference $9\times10^{-14}$ percentage points);
+          it depends on the formulation only. The values below use the Gurobi runs.
+    \item The ordering $z^{\star}\le z^{LP}_{(M3)}\le z^{LP}_{(M2)}\le z^{LP}_{(M1)}$ holds in all 50 instances; the inequality between M2 and M1 is strict in 50/50, and between M3 and M2 in 16/50.
+  \end{itemize}
+  \vspace{-2pt}
+  \begin{columns}[c]
+    \begin{column}{0.55\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{exp1_lp_gap.pdf}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \centering\footnotesize
+      \begin{tabular}{@{}lrrrr@{}}
+        \toprule
+        & \multicolumn{3}{c}{LP gap (\%)} & LP gap\\
+        \cmidrule(lr){2-4}
+        Model & mean & median & max & $=0$\\
+        \midrule
+        M1 & 75.90 & 65.63 & 242.22 & 0/50\\
+        M2 & 5.63 & 0.00 & 41.67 & 30/50\\
+        M3 & 1.63 & 0.00 & 28.75 & 43/50\\
+        \bottomrule
+      \end{tabular}\\[6pt]
+      \raggedright\scriptsize
+      In 43 of 50 instances the LP relaxation of (M3) already gives the integer optimum; (M2) does so in 30.
+    \end{column}
+  \end{columns}
+\end{frame}
+\end{ownslide}
+
+% ---- 8 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 1}Size of the explicit set-covering model}
+  \ownband
+  \vspace{-4pt}
+  \centering
+  \includegraphics[width=0.86\textwidth]{exp1_columns_time.pdf}
+
+  \raggedright\small
+  \begin{itemize}
+    \item (a) The number of admissible columns ranges from 1 to 5\,809 (median 50). It is bounded by $n(2^m-1)$, but the budget and the MQC
+          remove a large and variable share of the subsets, so instances with the same $m$ differ by several orders of magnitude.
+    \item (b) The integer solve time of (M3) increases with the number of columns: Spearman correlation 0.88 (HiGHS),
+          0.81 (Gurobi), 0.88 (CPLEX). All times stay below 2.6\,s.
+  \end{itemize}
+\end{frame}
+\end{ownslide}
+
+% ---- 9 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 1}Integer solve times by solver and formulation}
+  \ownband
+  \vspace{-4pt}
+  \begin{columns}[c]
+    \begin{column}{0.52\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{exp1_time_by_solver.pdf}\\
+      \scriptsize Bars: median over 50 instances; marks: maximum.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering\scriptsize
+      \begin{tabular}{@{}llrrr@{}}
+        \toprule
+        & & \multicolumn{3}{c}{integer time (s)}\\
+        \cmidrule(lr){3-5}
+        Solver & Model & median & mean & max\\
+        \midrule
+        HiGHS  & M1 & 0.033 & 0.036 & 0.110\\
+               & M2 & 0.033 & 0.033 & 0.085\\
+               & M3 & 0.030 & 0.166 & 2.546\\
+        \midrule
+        Gurobi & M1 & 0.020 & 0.022 & 0.079\\
+               & M2 & 0.019 & 0.020 & 0.036\\
+               & M3 & 0.023 & 0.049 & 0.385\\
+        \midrule
+        CPLEX  & M1 & 0.060 & 0.064 & 0.190\\
+               & M2 & 0.056 & 0.058 & 0.094\\
+               & M3 & 0.058 & 0.092 & 0.460\\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+  \end{columns}
+  \vspace{4pt}
+  \small
+  \begin{itemize}
+    \item The medians are similar across formulations. On the 6 instances with at least 1\,000 columns, the median time of (M3) is
+          0.78\,s (HiGHS), 0.21\,s (Gurobi) and 0.28\,s (CPLEX), against at most 0.07\,s for (M1) and (M2).
+  \end{itemize}
+  \begin{remarkbox}[interpretation]
+    At this scale, the differences between solvers are of the order of hundredths of a second. They are likely to reflect the
+    interface (in-memory for HiGHS, LP file for Gurobi and CPLEX) more than the algorithms, so they do not rank the solvers.
+  \end{remarkbox}
+\end{frame}
+\end{ownslide}
+
+% ---- 10 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 1}Conclusions}
+  \ownband
+  \begin{enumerate}
+    \item \textbf{The three formulations are correctly implemented.} They reach the same proven optimum on all 50 instances with the three solvers,
+          and every solution satisfies (2)--(7).
+    \item \textbf{The theoretical ordering of the LP bounds is confirmed empirically}: $z^{\star}\le z^{LP}_{(M3)}\le z^{LP}_{(M2)}\le z^{LP}_{(M1)}$
+          in all instances.
+    \item \textbf{Disaggregation is the main gain.} The mean LP gap falls from 75.90\% (M1) to 5.63\% (M2);
+          the set-covering bound reduces it further to 1.63\%, and closes it completely in 43 of 50 instances.
+    \item \textbf{The strength of (M3) has a size cost.} The explicit model can have thousands of columns already for $m\le 12$, and its solve time grows
+          with the number of columns. For realistic $m$ it requires column generation, as in the paper.
+    \item \textbf{The LP bound depends on the formulation, not on the solver}; the solve times of these small instances do not discriminate between solvers.
+  \end{enumerate}
+\end{frame}
+\end{ownslide}
+
+% =====================================================================
+\section{Experiment 2: group S1}
+% =====================================================================
+
+% ---- 11 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 2}Correctness and LP bounds of M1 and M2}
+  \ownband
+  \vspace{-4pt}
+  \small
+  \begin{itemize}
+    \item All 324 integer runs and 324 LP runs end with proven optimality; the final MIP gap is $0$.
+          The optimum of each instance is the same for both models and the three solvers (largest difference $10^{-11}$); it ranges from 488 to 3\,446.
+    \item LP gaps are again identical across solvers. M1: mean 44.36\%, range 29.89--65.30\%. M2: mean 1.18\%, range 0.00--7.08\%,
+          with a zero gap in 17 of 54 instances.
+  \end{itemize}
+  \centering
+  \includegraphics[width=0.86\textwidth]{exp2_lp_gap.pdf}
+
+  \raggedright\small
+  For (M2), the LP gap is almost zero in the $\ell$ variant (mean 0.03--0.04\% for every $n$) and larger in the s variant
+  (mean 3.44\%, 2.75\%, 0.77\% for $n=5,10,15$).
+\end{frame}
+\end{ownslide}
+
+% ---- 12 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 2}Integer solve times of M1 and M2}
+  \ownband
+  \vspace{-4pt}
+  \begin{columns}[c]
+    \begin{column}{0.54\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{exp2_time_boxplot.pdf}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \centering\scriptsize
+      \begin{tabular}{@{}llrrrr@{}}
+        \toprule
+        & & \multicolumn{4}{c}{integer time (s), 54 instances}\\
+        \cmidrule(lr){3-6}
+        Solver & Model & median & mean & max & total\\
+        \midrule
+        HiGHS  & M1 & 5.68 & 8.85 & 36.71 & 477.8\\
+               & M2 & 1.07 & 6.58 & 33.85 & 355.5\\
+        \midrule
+        Gurobi & M1 & 0.34 & 0.49 & 1.49 & 26.6\\
+               & M2 & 0.20 & 0.28 & 1.14 & 15.3\\
+        \midrule
+        CPLEX  & M1 & 0.68 & 0.78 & 2.95 & 42.2\\
+               & M2 & 0.35 & 0.46 & 1.31 & 24.5\\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+  \end{columns}
+  \vspace{4pt}
+  \small
+  \begin{itemize}
+    \item Every instance is solved in less than 37\,s; with Gurobi and CPLEX, in less than 3\,s.
+    \item Gurobi is the fastest solver in 47 of 54 instances for (M1) and in 46 of 54 for (M2); CPLEX in the others.
+          Geometric mean time ratio with respect to Gurobi: CPLEX 1.85 (M1) and 1.92 (M2); HiGHS 12.39 (M1) and 8.67 (M2).
+    \item Instances with the s variant of $M_i$ take longer: with HiGHS on (M2), mean 4.27--20.25\,s against 0.16--1.88\,s for $\ell$.
+  \end{itemize}
+\end{frame}
+\end{ownslide}
+
+% ---- 13 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 2}Paired comparison: does M2 solve faster than M1?}
+  \ownband
+  \vspace{-4pt}
+  \centering
+  \includegraphics[width=0.80\textwidth]{exp2_paired_time.pdf}
+
+  \raggedright\small
+  Each point is one instance; points below the diagonal are instances solved faster with (M2).
+
+  \centering\footnotesize
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    & HiGHS & Gurobi & CPLEX\\
+    \midrule
+    Instances where M2 is faster & 35/54 & 44/54 & 36/54\\
+    Geometric mean of time(M2)/time(M1) & 0.46 & 0.66 & 0.69\\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{2pt}
+  \raggedright
+  \begin{remarkbox}[interpretation]
+    \footnotesize (M2) is faster on average with every solver, but not on every instance. The modern solvers presumably strengthen (M1) by their own presolve and cuts,
+    which would explain why its LP gap of about 44\% translates into much smaller differences in solve time.
+    The logs needed to confirm this were not recorded.
+  \end{remarkbox}
+\end{frame}
+\end{ownslide}
+
+% ---- 14 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 2}Comparison with the paper (group S1)}
+  \ownband
+  \vspace{-8pt}
+  \scriptsize
+  \centering
+  \renewcommand{\arraystretch}{1.05}
+  \begin{tabular}{@{}cc|cc|cccc@{}}
+    \toprule
+    & & \multicolumn{2}{c|}{LP gap of (M2), mean (\%)} & \multicolumn{4}{c}{integer time of (M2), mean (s)}\\
+    $n$ & $M_i$ & paper \cite{tallanobibon2011} & this study & paper, CPLEX 10.2 & HiGHS & Gurobi & CPLEX 22.2\\
+    \midrule
+    5  & s      & 8.33 & 3.44 & 57.39 & 4.27  & 0.14 & 0.43\\
+    5  & $\ell$ & 6.51 & 0.04 & 3.91  & 0.16  & 0.07 & 0.23\\
+    10 & s      & 3.11 & 2.75 & 27.90 & 20.25 & 0.43 & 0.80\\
+    10 & $\ell$ & 3.26 & 0.03 & 6.05  & 0.56  & 0.13 & 0.35\\
+    15 & s      & 2.96 & 0.77 & 22.57 & 12.38 & 0.62 & 0.55\\
+    15 & $\ell$ & 1.28 & 0.04 & 3.22  & 1.88  & 0.31 & 0.37\\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{2pt}
+  \raggedright\scriptsize
+  Paper values: Table 4 (LP gap of the basic formulation) and Table 5 (CPLEX on the basic formulation, which the text identifies as (M2));
+  each cell is the mean of 9 instances, as here. Paper hardware: Pentium 2.8\,GHz, 1.49\,GB RAM.
+
+  \vspace{1pt}
+  \footnotesize
+  \begin{itemize}
+    \item \textbf{Agreement:} in both studies, instances with the s variant of $M_i$ are the harder ones, and all S1 instances are solved to optimality with (M2).
+    \item \textbf{Difference:} the LP gap of (M2) is smaller here, especially for the $\ell$ variant (0.03--0.04\% against 1.28--6.51\%).
+  \end{itemize}
+  \begin{remarkbox}[caution]
+    \footnotesize The instances are not the same: the paper's files are no longer available, the generator deviates in $O_j$ and in the random budget,
+    and the instances share data across $R$ and $M_i$ variants. The times also differ in hardware and solver version by more than 15 years.
+    The comparison therefore shows only qualitative agreement.
+  \end{remarkbox}
+\end{frame}
+\end{ownslide}
+
+% ---- 15 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 2}Conclusions}
+  \ownband
+  \begin{enumerate}
+    \item \textbf{Group S1 is easy for current solvers.} All 54 instances are solved to proven optimality with both formulations and all three solvers;
+          the largest time is 36.7\,s (HiGHS) and below 3\,s with Gurobi and CPLEX.
+    \item \textbf{(M2) dominates (M1) in bound quality}: mean LP gap 1.18\% against 44.36\%, consistent with Experiment 1 and with Proposition 3.
+    \item \textbf{(M2) is also faster on average}, with a geometric mean time ratio of 0.46 to 0.69 depending on the solver, but it is not faster on every instance.
+    \item \textbf{The choice of solver matters more than the choice between M1 and M2 at $m=100$}: HiGHS is about 9 to 12 times slower than Gurobi
+          in geometric mean, while CPLEX is about 2 times slower.
+    \item \textbf{The s variant of $M_i$ is the harder case}, as in the paper; the qualitative conclusions of the paper for S1 are reproduced,
+          though not its exact numbers.
+  \end{enumerate}
+\end{frame}
+\end{ownslide}
+
+% =====================================================================
+\section{Summary}
+% =====================================================================
+
+% ---- 16 ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Summary}Overall conclusions and limitations}
+  \ownband
+  \small
+  \textbf{Conclusions}
+  \begin{itemize}
+    \item The implementation reproduces the three exact formulations of the paper, validated by unit tests, an independent feasibility check and
+          the agreement of 3 formulations $\times$ 3 solvers on every optimum.
+    \item The empirical ordering of the LP bounds matches the theory: (M3) is the strongest and (M1) by far the weakest. The disaggregated linking
+          constraints (8) account for most of the improvement.
+    \item For the instance sizes tested, the compact model (M2) with a commercial MIP solver suffices for proven optimality: at most 1.3\,s per instance with Gurobi or CPLEX.
+  \end{itemize}
+  \vspace{4pt}
+  \textbf{Limitations}
+  \begin{itemize}
+    \item (M3) is solved only by explicit enumeration ($m\le12$); column generation and branch-and-price, which make (M3) usable for $m=100$, are not implemented.
+    \item Only group S1 was run; S2, S3 and the larger groups, where the paper reports failures of the exact methods, remain untested.
+    \item The generator has two documented deviations and shares data across instances; one seed only per configuration.
+    \item Times are end-to-end Pyomo times under different interfaces, with default solver settings and no solver logs or node counts.
+  \end{itemize}
+\end{frame}
+\end{ownslide}
+
+% =====================================================================
+% Thank you (not counted)
+% =====================================================================
+\begin{frame}[plain,noframenumbering]
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[fill=tecnicoblue,rounded corners=6pt,minimum width=0.55\paperwidth,
+          minimum height=2.6cm,align=center,text=white]
+      (ty) at ([yshift=1.7cm]current page.center)
+      {{\fontsize{30}{34}\selectfont\bfseries Thank you}\\[8pt]{\Large Questions?}};
+    \node[below=0.35cm of ty] {\tecnicologo{0.9cm}};
+    \node[anchor=south,text=slate,font=\footnotesize,align=center] at ([yshift=0.35cm]current page.south)
+      {\textbf{Judecir Cavalcante} (ist431224)\\
+       PhD Programme in Engineering and Management\\
+       Department of Engineering and Management\\
+       Instituto Superior T\'ecnico, Universidade de Lisboa\\[3pt]
+       Optimization and Applications\\
+       Prof.~Jos\'e Rui Figueira\\
+       Homework 2};
+  \end{tikzpicture}
+\end{frame}
+
+% =====================================================================
+% References (not counted)
+% =====================================================================
+\begin{frame}[noframenumbering]{References}
+  \scriptsize
+  \begin{thebibliography}{9}
+    \bibitem{tallanobibon2011} F.~Talla Nobibon, R.~Leus, F.C.R.~Spieksma.
+      Optimization models for targeted offers in direct marketing: Exact and heuristic algorithms.
+      \emph{European Journal of Operational Research}, 210(3):670--683, 2011.
+    \bibitem{cohen2004} M.-D.~Cohen.
+      Exploiting response models: Optimizing cross-sell and up-sell opportunities in banking.
+      \emph{Information Systems}, 29(4):327--341, 2004.
+  \end{thebibliography}
+\end{frame}
+
+\end{document}

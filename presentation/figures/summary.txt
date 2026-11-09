@@ -1,0 +1,111 @@
+EXPERIMENT 1 (M3_small_extra)
+instances=50 rows=450
+m counts={4: 6, 5: 6, 6: 6, 7: 5, 8: 5, 9: 5, 10: 6, 11: 6, 12: 5}
+n counts={2: 15, 3: 17, 4: 9, 5: 9}
+integer termination={'optimal': 450}
+LP termination={'optimal': 450}
+max spread of integer optimum over solvers and models=5.898e-13
+max spread of LP gap over solvers=8.704e-14
+z_IP <= z_M3 <= z_M2 <= z_M1 for all instances: True
+strict M3<M2: 16  strict M2<M1: 50
+M1: mean=75.90 median=65.63 max=242.22 zero-gap=0
+M2: mean=5.63 median=0.00 max=41.67 zero-gap=30
+M3: mean=1.63 median=0.00 max=28.75 zero-gap=43
+columns: min=1 median=50 max=5809
+integer time (s) by solver and formulation:
+                         median   mean    max
+solver      formulation                      
+appsi_highs M1            0.033  0.036  0.110
+            M2            0.033  0.033  0.085
+            M3            0.030  0.166  2.546
+cplex       M1            0.060  0.064  0.190
+            M2            0.056  0.058  0.094
+            M3            0.058  0.092  0.460
+gurobi      M1            0.020  0.022  0.079
+            M2            0.019  0.020  0.036
+            M3            0.023  0.049  0.385
+LP time median (s):
+solver       formulation
+appsi_highs  M1             0.010
+             M2             0.011
+             M3             0.011
+cplex        M1             0.047
+             M2             0.047
+             M3             0.052
+gurobi       M1             0.013
+             M2             0.012
+             M3             0.019
+Spearman(columns, M3 integer time) appsi_highs: 0.877
+Spearman(columns, M3 integer time) cplex: 0.881
+Spearman(columns, M3 integer time) gurobi: 0.806
+instances with >=1000 columns: 6
+median integer time (s), instances with >=1000 columns:
+                M1     M2     M3
+solver                          
+appsi_highs  0.044  0.033  0.782
+cplex        0.066  0.057  0.275
+gurobi       0.021  0.023  0.205
+
+EXPERIMENT 2 (S1)
+rows=324 instances=54
+termination={'optimal': 324} LP={'optimal': 324}
+max objective spread over solvers and models=1.000e-11
+objective range=[488, 3446]
+max |MIP gap| (%)=4.591e-14
+LP gap by model:
+       count   mean   std    min    25%    50%    75%    max
+model                                                       
+M1      54.0  44.36  9.92  29.89  36.17  41.84  52.09  65.30
+M2      54.0   1.18  1.86  -0.00   0.00   0.12   1.50   7.08
+LP gap mean by n, M variant, model:
+model      M1    M2
+n  cap             
+5  l    41.52  0.04
+   s    38.63  3.44
+10 l    55.39  0.03
+   s    40.13  2.75
+15 l    57.64  0.04
+   s    32.85  0.77
+M2 zero LP gap: 17/54
+integer time (s) by solver and model:
+                   median   mean     max      sum
+solver      model                                
+appsi_highs M1      5.676  8.849  36.709  477.835
+            M2      1.066  6.583  33.849  355.496
+cplex       M1      0.680  0.781   2.951   42.196
+            M2      0.354  0.455   1.313   24.545
+gurobi      M1      0.344  0.492   1.486   26.588
+            M2      0.199  0.283   1.142   15.290
+M2 mean/max time by n, M variant, solver:
+              mean                      max             
+solver appsi_highs cplex gurobi appsi_highs cplex gurobi
+n  cap                                                  
+5  l          0.16  0.23   0.07        0.17  0.35   0.09
+   s          4.27  0.43   0.14        8.73  0.72   0.20
+10 l          0.56  0.35   0.13        0.71  0.56   0.20
+   s         20.25  0.80   0.43       33.85  1.31   0.86
+15 l          1.88  0.37   0.31        7.00  0.62   0.50
+   s         12.38  0.55   0.62       30.37  0.89   1.14
+M1 mean/max time by n, M variant, solver:
+              mean                      max             
+solver appsi_highs cplex gurobi appsi_highs cplex gurobi
+n  cap                                                  
+5  l          0.12  0.20   0.06        0.13  0.34   0.07
+   s          4.34  0.41   0.15        9.45  0.80   0.23
+10 l          4.00  0.43   0.20        5.19  0.68   0.30
+   s         19.85  0.74   0.62       34.31  0.88   0.91
+15 l         13.55  1.86   1.01       23.12  2.95   1.49
+   s         11.24  1.04   0.92       36.71  1.86   1.40
+paired M2 vs M1:
+             M2_faster  geomean_ratio
+solver                               
+appsi_highs       35.0          0.463
+cplex             36.0          0.686
+gurobi            44.0          0.662
+fastest solver counts:
+solver  cplex  gurobi
+model                
+M1          7      47
+M2          8      46
+appsi_highs/gurobi geometric mean time ratio by model: {'M1': 12.39, 'M2': 8.67}
+cplex/gurobi geometric mean time ratio by model: {'M1': 1.85, 'M2': 1.92}
