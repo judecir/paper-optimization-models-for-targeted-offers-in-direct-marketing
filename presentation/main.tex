@@ -195,8 +195,8 @@ Homework 3}
     $p_{ij}$ & return of an offer & integer, uniform in $\{0,\dots,16\}$ & same & \ok\\
     $R$ & hurdle rate & $5\%$, $10\%$ or $15\%$ & same & \ok\\
     $m$, $n$ & customers, products & $m=100,200,300$; $n=5,10,15$ & same & \ok\\
-    $M_i$ (s) & offers per customer & uniform in $\{1,\dots,n/5\}$ & uniform in $\{1,\dots,\max(1,\lfloor n/5\rfloor)\}$ & \ok\\
-    $M_i$ ($\ell$) & offers per customer & uniform in $\{\lceil n/3\rceil,\dots,\lceil 2n/3\rceil\}$ & same & \ok\\
+    $M_i$ (s) & few offers per customer & uniform in $\{1,\dots,n/5\}$ & uniform in $\{1,\dots,\max(1,\lfloor n/5\rfloor)\}$ & \ok\\
+    $M_i$ ($\ell$) & many offers per customer & uniform in $\{\lceil n/3\rceil,\dots,\lceil 2n/3\rceil\}$ & same & \ok\\
     $O_j$ & MQC & uniform in $\{\lceil\bar M\rceil,\dots,\lceil 2\bar M\rceil\}$ & uniform in $\{\lceil\bar M\rceil,\dots,\lfloor 2\bar M\rfloor\}$ & \dev\\
     $B_j$ (min, max) & budget & $\lfloor O_jC_j/m\rfloor$ and $\lceil 2\bar M C_j/m\rceil$ & same & \ok\\
     $B_j$ (random) & budget & integer between $O_jC_j/m$ and $2C_j/n$ & integer between the min and max budgets & \dev\\
@@ -348,7 +348,7 @@ Homework 3}
   \vspace{-4pt}
   \footnotesize
   \begin{columns}[T]
-    \begin{column}{0.49\textwidth}
+    \begin{column}{0.41\textwidth}
       \begin{ownbox}{Experiment 1}{small instances, M1, M2 and M3}
         \scriptsize
         \begin{itemize}
@@ -360,14 +360,16 @@ Homework 3}
         \end{itemize}
       \end{ownbox}
     \end{column}
-    \begin{column}{0.49\textwidth}
+    \begin{column}{0.57\textwidth}
       \begin{ownbox}{Experiment 2}{groups S1--S3 of the paper, M1 and M2}
         \scriptsize
         \begin{itemize}
           \item \textbf{162 instances}: $m=100$, 200, 300 (S1, S2, S3), each with $n\in\{5,10,15\}$ $\times$ 3 values of $R$ $\times$ 2 $M_i$ variants $\times$ 3 budgets; seed 1.
-          \item (M3) is excluded: explicit enumeration is limited to $m\le 12$.
-          \item Integer model and LP relaxation of M1 and M2; time limit 3600\,s.
-          \item $162\times2\times3=972$ integer runs and 972 LP runs.
+          \item The paper has small (S1--S3), medium (M1, M2: $m=1\,000$, $2\,000$) and large (L: $m=10\,000$) groups; only the small ones are run.
+                The group names M1, M2 are unrelated to the models M1, M2.
+          \item $M_i$ variants: s (small), 1, 1--2, 1--3 offers per customer for $n=5,10,15$; $\ell$ (large), 2--4, 4--7, 5--10.
+          \item Integer model and LP relaxation of M1 and M2 (M3 excluded: enumeration limited to $m\le 12$); time limit 3600\,s;
+                $162\times2\times3=972$ integer runs and 972 LP runs.
         \end{itemize}
       \end{ownbox}
     \end{column}
@@ -386,8 +388,8 @@ Homework 3}
     \end{tabular}
   \end{ownbox}
   \vspace{2pt}
-  \scriptsize\textbf{Correctness:} every integer solution is checked against (2)--(7) by an independent function. The 10 unit tests pass,
-  including a 3-customer example with 8 admissible columns and a unique optimum $11$, confirmed by enumerating all $2^{6}=64$ offer matrices.
+  \scriptsize\textbf{Correctness:} every integer solution is checked against (2)--(7) by an independent function; the 10 unit tests pass,
+  including a 3-customer example (unique optimum $11$) confirmed by enumerating all $2^{6}=64$ offer matrices.
 \end{frame}
 \end{ownslide}
 
@@ -669,6 +671,45 @@ Homework 3}
 \end{frame}
 \end{ownslide}
 
+% ---- E2: small versus large M_i ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Experiment 2}Small versus large $M_i$}
+  \ownband
+  \vspace{-4pt}
+  \small
+  Variant s: each customer accepts few offers ($M_i\le n/5$). Variant $\ell$: each customer accepts many ($M_i$ between $n/3$ and $2n/3$).
+  Each variant has 81 instances (27 per group).
+
+  \vspace{4pt}
+  \centering\scriptsize
+  \begin{tabular}{@{}l|rrr|rrr|rrr@{}}
+    \toprule
+    & \multicolumn{3}{c|}{LP gap (\%)} & \multicolumn{3}{c|}{mean time of M2 (s)} & \multicolumn{3}{c}{geo.\ mean time(M2)/time(M1)}\\
+    Variant & M1 mean & M2 mean & M2 $=0$ & HiGHS & Gurobi & CPLEX & HiGHS & Gurobi & CPLEX\\
+    \midrule
+    s      & 42.05 & 2.43 & 4/81  & 24.74 & 1.14 & 1.35 & 0.76 & 0.81 & 0.80\\
+    $\ell$ & 56.76 & 0.10 & 45/81 & 3.05  & 0.37 & 0.55 & 0.21 & 0.53 & 0.60\\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{4pt}
+  \raggedright\footnotesize
+  \begin{itemize}
+    \item \textbf{s is the harder variant for M2.} Its LP gap is larger in every group (2.32, 1.66, 3.33\% against 0.04, 0.08, 0.18\% in S1, S2, S3)
+          and is closed in only 4 of 81 instances. Its mean solve time is about 8 (HiGHS), 3 (Gurobi) and 2.5 (CPLEX) times that of $\ell$.
+    \item \textbf{$\ell$ is where M2 gains most over M1.} M1 has its larger mean LP gaps in $\ell$, while the LP of M2 is almost integral;
+          the time ratio M2/M1 falls to 0.21 with HiGHS.
+    \item \textbf{A property of the $\ell$ instances:} the rule $O_j\le 2\bar M$ allows $O_j>m$ when customers accept many offers. In 45 of the 81 $\ell$ instances,
+          99 of the 810 products require more customers than exist and therefore cannot be part of any feasible campaign.
+    \item \textbf{Same direction in Experiment 1:} mean LP gap of M2 7.53\% (s, 27 instances) against 3.40\% ($\ell$, 23); of M3, 2.26\% against 0.89\%.
+  \end{itemize}
+  \begin{remarkbox}[interpretation, not tested]
+    \footnotesize With small $M_i$, the products compete for the same few offer slots of each customer through (4); with large $M_i$ this competition is weak.
+    This would explain why the LP relaxation of M2 is almost integral in $\ell$.
+  \end{remarkbox}
+\end{frame}
+\end{ownslide}
+
 % ---- E2: conclusions ----
 \begin{ownslide}
 \begin{frame}{\ownbadge{Experiment 2}Conclusions}
@@ -681,7 +722,8 @@ Homework 3}
           against about 1\,100\,s for (M1) on S3.
     \item \textbf{The solver matters more than the formulation in the typical case}: HiGHS is about 7 to 9 times slower than Gurobi on (M2);
           CPLEX is 1.3 to 1.9 times slower, with the difference shrinking as $m$ grows.
-    \item \textbf{The s variant of $M_i$ is the harder case} in all groups: larger LP gaps of (M2) and longer solve times.
+    \item \textbf{The s variant of $M_i$ (few offers per customer) is the harder case} in all groups: larger LP gaps of (M2) and longer solve times;
+          in the $\ell$ variant the LP of (M2) is almost integral.
   \end{enumerate}
 \end{frame}
 \end{ownslide}

@@ -325,5 +325,28 @@ fig.tight_layout()
 fig.savefig(OUT / "exp2_paired_time.pdf")
 plt.close(fig)
 
+# Small (s) versus large (l) M_i variant, pooled over S1-S3
+log("")
+log("M_i VARIANT (pooled S1-S3, 81 instances each)")
+log("LP gap by variant and model:\n" + ref2.groupby(["cap", "model"]).gap.agg(["mean", "median", "max"]).round(2).to_string())
+log("zero LP gap by variant and model:\n" + ref2.groupby(["cap", "model"]).gap.agg(lambda s: int((s.abs() < 1e-6).sum())).unstack().to_string())
+log("mean time by variant, solver, model:\n" + e2.groupby(["cap", "solver", "model"]).elapsed_seconds.mean().unstack().round(2).to_string())
+wv = e2.pivot_table(index=["cap", "instance", "solver"], columns="model", values="elapsed_seconds").reset_index()
+log("geometric mean time(M2)/time(M1) by variant:\n"
+    + wv.groupby(["cap", "solver"]).apply(lambda x: float(np.exp(np.log(x.M2 / x.M1).mean()))).round(2).unstack().to_string())
+over = []
+for grp in GROUPS:
+    for path in sorted((ROOT / "instances" / grp).glob("*.json")):
+        inst = Instance.from_json(path)
+        k = sum(o > inst.m for o in inst.minimum_offers)
+        over.append((grp, "_l_" in path.name, k, inst.n))
+ov = pd.DataFrame(over, columns=["group", "large", "products_over_m", "n"])
+log("products with O_j > m (large variant): "
+    f"{int(ov[ov.large].products_over_m.sum())} of {int(ov[ov.large].n.sum())} products, "
+    f"in {int((ov[ov.large].products_over_m > 0).sum())} of {int(ov.large.sum())} instances; "
+    f"small variant: {int(ov[~ov.large].products_over_m.sum())}")
+e1v = e1[e1.solver == "gurobi"]
+log("Experiment 1 LP gap by variant:\n" + e1v.groupby(["capacity_variant", "formulation"]).lp_gap_percent.agg(["count", "mean"]).round(2).to_string())
+
 (OUT / "summary.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
 print("\n".join(lines))

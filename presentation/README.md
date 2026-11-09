@@ -8,7 +8,7 @@ experiments stored in `results/`.
 
 ```
 presentation/
-├── main.tex                 slides (18 numbered slides + cover, outline, thank-you, reference)
+├── main.tex                 slides (19 numbered slides + cover, outline, thank-you, reference)
 ├── main.pdf                 compiled slides
 ├── figures/                 figures generated from the CSV files, and summary.txt with every number used
 ├── scripts/make_figures.py  builds figures/ from results/*.csv and instances/M3_small_extra/*.json

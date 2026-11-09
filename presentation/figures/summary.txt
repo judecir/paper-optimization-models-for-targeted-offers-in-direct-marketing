@@ -195,3 +195,41 @@ slowest runs:
 744  S3_n15_R15_s_minimum_seed1.json  appsi_highs    M1       222.496833
 396   S2_n15_R5_s_minimum_seed1.json  appsi_highs    M1       193.246823
 696  S3_n10_R10_s_minimum_seed1.json  appsi_highs    M1       191.306767
+
+M_i VARIANT (pooled S1-S3, 81 instances each)
+LP gap by variant and model:
+            mean  median    max
+cap model                      
+l   M1     56.76   56.61  73.09
+    M2      0.10    0.00   1.26
+s   M1     42.05   39.37  78.82
+    M2      2.43    1.39  11.08
+zero LP gap by variant and model:
+model  M1  M2
+cap          
+l       0  45
+s       0   4
+mean time by variant, solver, model:
+model               M1     M2
+cap solver                   
+l   appsi_highs  18.61   3.05
+    cplex        15.53   0.55
+    gurobi        1.35   0.37
+s   appsi_highs  42.47  24.74
+    cplex         2.28   1.35
+    gurobi        1.38   1.14
+geometric mean time(M2)/time(M1) by variant:
+solver  appsi_highs  cplex  gurobi
+cap                               
+l              0.21    0.6    0.53
+s              0.76    0.8    0.81
+products with O_j > m (large variant): 99 of 810 products, in 45 of 81 instances; small variant: 0
+Experiment 1 LP gap by variant:
+                              count   mean
+capacity_variant formulation              
+l                M1              23  84.94
+                 M2              23   3.40
+                 M3              23   0.89
+s                M1              27  68.21
+                 M2              27   7.53
+                 M3              27   2.26
