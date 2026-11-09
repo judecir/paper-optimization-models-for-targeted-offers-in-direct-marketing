@@ -6,3 +6,5 @@ Requires-Dist: pyomo>=6.8
 Requires-Dist: highspy>=1.7
 Provides-Extra: test
 Requires-Dist: pytest>=8; extra == "test"
+Provides-Extra: plots
+Requires-Dist: matplotlib>=3.8; extra == "plots"
