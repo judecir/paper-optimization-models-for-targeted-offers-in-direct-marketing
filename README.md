@@ -87,6 +87,10 @@ objetivo inteiro é zero. `aggregate.csv` resume gaps LP/MIP médios, tempo méd
 e quantidade de instâncias resolvidas até a otimalidade por grupo, `n`, modelo
 e solver. O notebook também mostra como gerar, executar e comparar os 54 casos
 S1 com HiGHS, Gurobi e CPLEX em arquivos CSV consolidados.
+Uma seção independente executa S2 (`m = 200`) com a mesma grade experimental
+de 54 instâncias, salvando-as em `instances/S2/` e os resultados em `results/S2_*`.
+Ela executa M1/M2 inteiros e suas relaxações LP com os três solvers; reexecutá-la
+substitui somente os arquivos de S2, sem reexecutar S1.
 Durante essa execução, o notebook informa a conclusão de cada instância.
 O limite é de 3600 segundos por resolução inteira ou LP; somente esse limite é
 configurado explicitamente, e as demais opções ficam nos padrões dos solvers.
