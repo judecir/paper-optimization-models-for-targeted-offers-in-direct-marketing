@@ -295,6 +295,46 @@ Homework 2}
 \end{frame}
 
 % =====================================================================
+\section{Implementation}
+% =====================================================================
+
+% ---- implementation overview ----
+\begin{ownslide}
+\begin{frame}{\ownbadge{Implementation}Overview}
+  \ownband
+  \vspace{-2pt}
+  \centering
+  \begin{tikzpicture}[font=\scriptsize,
+      box/.style={draw=tecnicoblue,thick,rounded corners,fill=white,align=center,text width=1.85cm,minimum height=1.05cm},
+      arr/.style={-{Latex[length=2mm]},thick,slate}]
+    \node[box] (gen) {\textbf{Generator}\\ rules of Sec.~5.1,\\ fixed seed};
+    \node[box,right=0.38cm of gen] (inst) {\textbf{Instance}\\ stored as a\\ JSON file};
+    \node[box,right=0.38cm of inst] (mod) {\textbf{Pyomo model}\\ M1, M2 or M3;\\ integer or LP};
+    \node[box,right=0.38cm of mod] (sol) {\textbf{Solver}\\ HiGHS, Gurobi\\ or CPLEX};
+    \node[box,right=0.38cm of sol] (chk) {\textbf{Check}\\ solution against\\ (2)--(7)};
+    \node[box,right=0.38cm of chk] (res) {\textbf{Results}\\ CSV, tables\\ and figures};
+    \foreach \a/\b in {gen/inst,inst/mod,mod/sol,sol/chk,chk/res} \draw[arr] (\a) -- (\b);
+  \end{tikzpicture}
+
+  \vspace{6pt}
+  \raggedright\small
+  \begin{itemize}
+    \item \textbf{Pyomo as a common modelling layer.} Each formulation is written once, in algebraic form close to the paper.
+          The same model is sent to HiGHS, Gurobi or CPLEX by changing only the solver name; Pyomo translates the model and
+          returns the solution, the status and the bound in a uniform way. Only the time limit is passed to the solvers.
+    \item \textbf{One model builder for M1 and M2.} The two formulations differ only in the linking constraints, (5) or (8).
+          The LP relaxation is obtained from the same builder by changing the domain of $x$ and $y$ from $\{0,1\}$ to $[0,1]$.
+    \item \textbf{M3 in two steps.} The admissible columns are enumerated first (budget and MQC checked for each subset of customers),
+          and the set-covering model is then built from them. Its solution is mapped back to $(x,y)$.
+    \item \textbf{Safeguards.} Every integer solution, from any model and solver, is checked against (2)--(7) by a function that does not use Pyomo.
+          Unit tests cover the 3-customer example, a brute-force enumeration of all solutions and the reproducibility of the generator.
+    \item \textbf{Reproducibility.} Instances are generated from fixed seeds and saved before solving; each run writes one CSV row per instance,
+          model and solver.
+  \end{itemize}
+\end{frame}
+\end{ownslide}
+
+% =====================================================================
 \section{Experimental design}
 % =====================================================================
 
