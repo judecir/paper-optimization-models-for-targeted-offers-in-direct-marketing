@@ -11,12 +11,13 @@ módulos Python deste diretório.
 Python 3.11 ou superior. Instale os módulos e dependências de teste:
 
 ```powershell
-python -m pip install -e ".[test]"
+python -m pip install -e ".[test,plots]"
 ```
 
 HiGHS (`appsi_highs`) é o solver padrão e é instalado com `highspy`. Para Gurobi
 ou CPLEX, instale/configure o solver e sua licença no ambiente e passe
 `--solver gurobi` ou `--solver cplex`.
+O extra `plots` instala Matplotlib para os gráficos comparativos do notebook.
 
 ## Testes e exemplo pequeno
 
@@ -86,7 +87,35 @@ objetivo inteiro é zero. `aggregate.csv` resume gaps LP/MIP médios, tempo méd
 e quantidade de instâncias resolvidas até a otimalidade por grupo, `n`, modelo
 e solver. O notebook também mostra como gerar, executar e comparar os 54 casos
 S1 com HiGHS, Gurobi e CPLEX em arquivos CSV consolidados.
+Durante essa execução, o notebook informa a conclusão de cada instância.
+O limite é de 3600 segundos por resolução inteira ou LP; somente esse limite é
+configurado explicitamente, e as demais opções ficam nos padrões dos solvers.
+O campo `elapsed_seconds` registra o tempo da resolução inteira, não da
+relaxação LP. Depois da execução, o notebook cria gráficos em inglês de tempo
+geral e detalhados por `n` e formulação em `results/plots/`. As relaxações são
+comparadas em tabelas por solver, tamanho e formulação, pois os gaps de uma
+mesma formulação e instância são iguais entre solvers (salvo tolerâncias
+numéricas). A tabela geral também apresenta tempos médios e medianos, vitórias
+por grupo e razões de tempo pareadas.
 
 M3 enumera explicitamente subconjuntos e é intencionalmente limitado a
 `m <= 12`; use-o para instâncias pequenas como a validação, não para o plano
 experimental de larga escala.
+
+## Comparar as relaxações LP de M1, M2 e M3
+
+O notebook inclui nove instâncias-base com `m = 4, 8, 12` clientes e mais 50
+instâncias com `m = 4, ..., 12`, todas com até 12 clientes para permitir a
+enumeração de colunas do M3. As instâncias adicionais variam `n`, hurdle rate,
+capacidade e orçamento e usam seeds consecutivos a partir de 4000; candidatos
+sem ótimo inteiro positivo são descartados, pois não permitem calcular gap
+relativo. Para cada instância compara M1/M2/M3, verifica a concordância dos
+ótimos inteiros e resolve as relaxações LP com HiGHS, Gurobi e CPLEX. As
+instâncias ficam em `instances/M3_small/` e `instances/M3_small_extra/`; os
+resultados detalhados e as tabelas agregadas ficam em
+`results/M3_small_lp_results.csv`, `results/M3_small_lp_summary.csv`,
+`results/M3_small_extra_results.csv` e
+`results/M3_small_extra_summary.csv`. O gap é calculado em relação ao ótimo
+inteiro comum; um valor menor indica uma relaxação mais forte. As tabelas
+separam os solvers mesmo quando os gaps coincidem numericamente e incluem
+tempo inteiro para as 50 instâncias adicionais.

@@ -1,0 +1,15 @@
+README.md
+generator.py
+instance.py
+models.py
+pyproject.toml
+run_experiments.py
+setcover.py
+direct_marketing_offer_optimization.egg-info/PKG-INFO
+direct_marketing_offer_optimization.egg-info/SOURCES.txt
+direct_marketing_offer_optimization.egg-info/dependency_links.txt
+direct_marketing_offer_optimization.egg-info/requires.txt
+direct_marketing_offer_optimization.egg-info/top_level.txt
+tests/test_generator.py
+tests/test_models.py
+tests/test_run_experiments.py

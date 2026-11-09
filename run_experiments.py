@@ -63,10 +63,14 @@ def run_experiments(
     *,
     solver: str = DEFAULT_SOLVER,
     time_limit: float = 3600,
+    progress: bool = False,
 ) -> list[dict[str, object]]:
-    """Solve both formulations and save one row per instance and model."""
+    """Solve both formulations and save one row per instance and model.
+
+    Set ``progress`` to print completion of each instance while long runs execute.
+    """
     rows: list[dict[str, object]] = []
-    for path in instance_paths:
+    for index, path in enumerate(instance_paths, start=1):
         instance = Instance.from_json(path)
         for formulation in MODELS:
             integer_result = solve_model(
@@ -77,6 +81,11 @@ def run_experiments(
             )
             rows.append(
                 _result_row(path, instance, formulation, solver, integer_result, lp_result)
+            )
+        if progress:
+            print(
+                f"[{solver}] {index}/{len(instance_paths)} concluída: {path.name}",
+                flush=True,
             )
     if rows:
         write_results_csv(rows, output_csv)

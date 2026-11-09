@@ -71,22 +71,27 @@ def build_setcover_model(
         sense=pyo.maximize,
     )
     model.hurdle = pyo.Constraint(
-        expr=sum(columns[k].hurdle_coefficient * model.z[k] for k in model.K) >= 0
-    )
-    model.customer_limit = pyo.Constraint(
-        model.I,
-        rule=lambda m, i: sum(
-            m.z[k] for k in m.K if i in columns[k].customers
+        rule=lambda m: (
+            sum(columns[k].hurdle_coefficient * m.z[k] for k in m.K) >= 0
+            if columns
+            else pyo.Constraint.Feasible
         )
-        <= instance.max_offers[i],
     )
-    model.product_limit = pyo.Constraint(
-        model.J,
-        rule=lambda m, j: sum(
-            m.z[k] for k in m.K if columns[k].product == j
-        )
-        <= 1,
-    )
+
+    def customer_limit_rule(m: pyo.ConcreteModel, i: int) -> object:
+        customer_columns = [k for k in m.K if i in columns[k].customers]
+        if not customer_columns:
+            return pyo.Constraint.Feasible
+        return sum(m.z[k] for k in customer_columns) <= instance.max_offers[i]
+
+    def product_limit_rule(m: pyo.ConcreteModel, j: int) -> object:
+        product_columns = [k for k in m.K if columns[k].product == j]
+        if not product_columns:
+            return pyo.Constraint.Feasible
+        return sum(m.z[k] for k in product_columns) <= 1
+
+    model.customer_limit = pyo.Constraint(model.I, rule=customer_limit_rule)
+    model.product_limit = pyo.Constraint(model.J, rule=product_limit_rule)
     return model, columns
 
 
@@ -102,6 +107,24 @@ def solve_setcover(
     optimizer = pyo.SolverFactory(solver)
     if optimizer is None or not optimizer.available(exception_flag=False):
         raise RuntimeError(f"Solver {solver!r} is unavailable.")
+    if not columns:
+        x = tuple(tuple(0.0 for _ in range(instance.n)) for _ in range(instance.m))
+        y = tuple(0.0 for _ in range(instance.n))
+        if not relax:
+            validate_solution(instance, x, y)
+        return SolveResult(
+            formulation="M3",
+            solver=solver,
+            objective=0.0,
+            best_bound=0.0,
+            status="ok",
+            termination="optimal",
+            elapsed_seconds=0.0,
+            branch_and_bound_nodes=0,
+            x=x,
+            y=y,
+            relaxed=relax,
+        )
     optimizer.options.update(_solver_options(solver, time_limit))
     start = perf_counter()
     results = optimizer.solve(model, tee=False)

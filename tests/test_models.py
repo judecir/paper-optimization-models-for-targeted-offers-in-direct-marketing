@@ -3,6 +3,7 @@ from math import isclose
 
 import pytest
 
+from generator import generate_budget_variants
 from instance import Instance, validation_instance
 from models import brute_force_optimum, solve_model, validate_solution
 from setcover import enumerate_columns, solve_setcover
@@ -88,3 +89,17 @@ def test_setcover_rejects_large_instances() -> None:
     )
     with pytest.raises(ValueError, match="m <= 12"):
         enumerate_columns(instance)
+
+
+def test_setcover_handles_products_without_admissible_columns() -> None:
+    instance = generate_budget_variants(
+        m=8,
+        n=2,
+        hurdle_rate=0.10,
+        capacity_variant="l",
+        seed=4004,
+    )["maximum"]
+    assert not enumerate_columns(instance)
+    result = solve_setcover(instance)
+    assert result.is_optimal
+    assert result.objective == 0
