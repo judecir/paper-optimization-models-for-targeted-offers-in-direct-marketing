@@ -424,89 +424,25 @@ Homework 3}
   \begin{itemize}
     \item The number of columns ranges from 1 to 5\,809, already with at most 12 customers.
     \item The solve time of M3 increases with the number of columns, but stays below 2.6\,s.
+    \item M1 and M2 are solved in less than 0.2\,s on every instance; at this size the times are too small to rank the solvers.
   \end{itemize}
 \end{frame}
 \end{ownslide}
 
 % ---- 9 ----
-\begin{ownslide}
-\begin{frame}{\ownbadge{Experiment 1}Solve times}
-  \ownband
-  \begin{columns}[c]
-    \begin{column}{0.54\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{exp1_time_by_solver.pdf}\\[-2pt]
-      \raggedright\figcap{Integer solve time by solver and model in Experiment 1: bars show the median over 50 instances, marks the maximum. Logarithmic scale.}
-    \end{column}
-    \begin{column}{0.44\textwidth}
-      \centering\footnotesize
-      \begin{tabular}{@{}llrr@{}}
-        \toprule
-        & & \multicolumn{2}{c}{time (s)}\\
-        \cmidrule(lr){3-4}
-        Solver & Model & median & max\\
-        \midrule
-        HiGHS  & M1 & 0.033 & 0.110\\
-               & M2 & 0.033 & 0.085\\
-               & M3 & 0.030 & 2.546\\
-        \midrule
-        Gurobi & M1 & 0.020 & 0.079\\
-               & M2 & 0.019 & 0.036\\
-               & M3 & 0.023 & 0.385\\
-        \midrule
-        CPLEX  & M1 & 0.060 & 0.190\\
-               & M2 & 0.056 & 0.094\\
-               & M3 & 0.058 & 0.460\\
-        \bottomrule
-      \end{tabular}
-    \end{column}
-  \end{columns}
-  \vspace{6pt}
-  \begin{itemize}
-    \item All instances are solved in a fraction of a second, except M3 on the instances with many columns.
-    \item At this size, the times are too small to rank the solvers.
-  \end{itemize}
-\end{frame}
-\end{ownslide}
-
 % ---- 10 ----
-\begin{ownslide}
-\begin{frame}{\ownbadge{Experiment 1}Conclusions}
-  \ownband
-  \begin{enumerate}
-    \item \textbf{The three models are correctly implemented}: they reach the same optimum on all 50 instances, with the three solvers.
-    \item \textbf{The theoretical ordering of the LP bounds is confirmed}: $z^{\star}\le z^{LP}_{(M3)}\le z^{LP}_{(M2)}\le z^{LP}_{(M1)}$.
-    \item \textbf{Disaggregation is the main gain}: the mean LP gap falls from 75.90\% (M1) to 5.63\% (M2), and to 1.63\% with M3.
-    \item \textbf{The strength of M3 has a size cost}: thousands of columns already for $m\le 12$. Larger instances require column generation, as in the paper.
-  \end{enumerate}
-\end{frame}
-\end{ownslide}
-
 % =====================================================================
 \section{Experiment 2: groups S1 to S3}
 % =====================================================================
 
 % ---- E2: optimality ----
-\begin{ownslide}
-\begin{frame}{\ownbadge{Experiment 2}Optimality}
-  \ownband
-  \begin{itemize}
-    \item \textbf{All runs finish with status optimal}: 162 instances $\times$ 2 models $\times$ 3 solvers $=972$ integer runs, and the same number of LP runs.
-    \item \textbf{No run reaches the time limit} of 3600\,s; the longest takes 1\,145\,s.
-    \item \textbf{The models and the solvers agree on the optimum.} The only exceptions are three runs on S3 that stop at the default tolerance of the solver ($0.01\%$),
-          one unit away from the optimum (for example 10\,898 instead of 10\,899).
-    \item The optimum $z^{\star}$ of each instance is therefore taken as the best value over its six runs.
-  \end{itemize}
-\end{frame}
-\end{ownslide}
-
 % ---- E2: LP bounds ----
 \begin{ownslide}
 \begin{frame}{\ownbadge{Experiment 2}LP bounds}
   \ownband
   \vspace{-2pt}
   \centering
-  \includegraphics[width=0.78\textwidth]{exp2_lp_gap.pdf}\\[-2pt]
+  \includegraphics[width=0.70\textwidth]{exp2_lp_gap.pdf}\\[-2pt]
   \figcap{LP gap of M1 (left) and M2 (right) on the 162 instances, by group and $M_i$ variant. The vertical scales differ.}
 
   \vspace{3pt}
@@ -525,6 +461,8 @@ Homework 3}
   \vspace{4pt}
   \raggedright\small
   \begin{itemize}
+    \item All 972 integer runs end with status optimal and the models agree on the optimum; three runs on S3 stop at the
+          solver tolerance ($0.01\%$), one unit away from it.
     \item The LP gap of M2 is about 1\% on average, against 44--52\% for M1, in every group.
   \end{itemize}
 \end{frame}
@@ -564,25 +502,6 @@ Homework 3}
 \end{ownslide}
 
 % ---- E2: effect of m ----
-\begin{ownslide}
-\begin{frame}{\ownbadge{Experiment 2}Effect of the number of customers}
-  \ownband
-  \vspace{-2pt}
-  \centering
-  \includegraphics[width=0.82\textwidth]{exp2_time_growth.pdf}\\[-2pt]
-  \figcap{Mean (a) and maximum (b) integer solve time over the 54 instances of each group, per solver and model. Logarithmic scale.}
-
-  \vspace{4pt}
-  \raggedright
-  \begin{itemize}
-    \item Mean times grow moderately with $m$: for M2, from 0.28 to 1.32\,s with Gurobi and from 6.58 to 24.82\,s with HiGHS.
-    \item The worst case grows much faster for M1: its longest runs on S3 take about 1\,100\,s (CPLEX and HiGHS),
-          while no M2 run exceeds 139\,s.
-    \item Each run was executed once, so the extreme values should be read with caution.
-  \end{itemize}
-\end{frame}
-\end{ownslide}
-
 % ---- E2: M1 versus M2 ----
 \begin{ownslide}
 \begin{frame}{\ownbadge{Experiment 2}M1 versus M2}
@@ -645,19 +564,6 @@ Homework 3}
 \end{ownslide}
 
 % ---- E2: conclusions ----
-\begin{ownslide}
-\begin{frame}{\ownbadge{Experiment 2}Conclusions}
-  \ownband
-  \begin{enumerate}
-    \item \textbf{Groups S1 to S3 are solved to optimality on a laptop}, with both models and the three solvers.
-    \item \textbf{M2 gives a much better bound than M1}: mean LP gap of about 1\% against 44--52\%, as in Experiment 1.
-    \item \textbf{M2 is faster on average and more robust}: its worst case is 139\,s, against about 1\,100\,s for M1.
-    \item \textbf{The solver matters}: Gurobi and CPLEX take about one second per instance, HiGHS several times longer.
-    \item \textbf{Instances where customers accept few offers are the harder ones.}
-  \end{enumerate}
-\end{frame}
-\end{ownslide}
-
 % =====================================================================
 \section{Summary}
 % =====================================================================
@@ -670,7 +576,9 @@ Homework 3}
   \begin{itemize}
     \item The three exact formulations of the paper were implemented and validated: all models and solvers agree on the optimum.
     \item The LP bounds follow the theory: M3 is the strongest and M1 by far the weakest. The disaggregated constraints (8) give most of the improvement.
-    \item Up to $m=300$, the compact model M2 with a commercial solver is enough: at most 7.2\,s per instance.
+    \item M2 is also faster on average and more robust than M1: its worst case is 139\,s, against about 1\,100\,s for M1.
+    \item Up to $m=300$, M2 with a commercial solver is enough: at most 7.2\,s per instance with Gurobi or CPLEX; HiGHS is several times slower.
+    \item Instances where customers accept few offers are the harder ones.
   \end{itemize}
   \vspace{8pt}
   \textbf{Limitations}
