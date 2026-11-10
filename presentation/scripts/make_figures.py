@@ -301,27 +301,32 @@ fig.legend(handles, labels, loc="lower center", ncol=6, fontsize=7.5)
 fig.savefig(OUT / "exp2_time_growth.pdf")
 plt.close(fig)
 
-# Figure 7: paired M1 vs M2 time per instance, one panel per solver, coloured by group
-fig, axes = plt.subplots(1, 3, figsize=(9.6, 3.0))
-for ax, s in zip(axes, SOLVER_ORDER):
-    g = w2[w2.solver == s]
-    lo = min(g.M1.min(), g.M2.min()) * 0.7
-    hi = max(g.M1.max(), g.M2.max()) * 1.4
-    ax.plot([lo, hi], [lo, hi], color=SLATE, linewidth=0.8, linestyle="--", zorder=2)
-    for grp in GROUPS:
-        h = g[g.group == grp]
-        ax.scatter(h.M1, h.M2, s=12, color=GROUP_COLOR[grp], edgecolor="white", linewidth=0.3,
-                   zorder=3, label=grp)
-    ax.set_xscale("log")
-    ax.set_yscale("log")
-    ax.set_xlim(lo, hi)
-    ax.set_ylim(lo, hi)
-    ax.set_xlabel("M1 time (s)")
-    ax.set_ylabel("M2 time (s)")
-    faster = int((g.M2 < g.M1).sum())
-    ax.set_title(f"{SOLVER_LABEL[s]}: M2 faster in {faster}/162", fontsize=10, loc="left")
-    ax.legend(fontsize=7.5, loc="upper left")
-fig.tight_layout()
+# Figure 7: distribution of the time ratio M2/M1 per instance, by group and solver
+fig, ax = plt.subplots(figsize=(9.6, 2.9))
+positions, data, colors = [], [], []
+for k, grp in enumerate(GROUPS):
+    for j, s in enumerate(SOLVER_ORDER):
+        g = w2[(w2.group == grp) & (w2.solver == s)]
+        positions.append(k * 3.8 + j)
+        data.append((g.M2 / g.M1).to_numpy())
+        colors.append(SOLVER_COLOR[s])
+bp = ax.boxplot(data, positions=positions, widths=0.7, patch_artist=True, showfliers=True,
+                medianprops={"color": "black", "linewidth": 1.2},
+                flierprops={"marker": "o", "markersize": 2.5, "markerfacecolor": SLATE, "markeredgecolor": SLATE})
+for patch, color in zip(bp["boxes"], colors):
+    patch.set_facecolor(color)
+    patch.set_edgecolor(SLATE)
+ax.axhline(1.0, color="black", linewidth=1.0, linestyle="--", zorder=2)
+ax.set_yscale("log")
+ax.set_xticks([k * 3.8 + 1 for k in range(3)], [f"{g} ($m={GROUP_M[g]}$)" for g in GROUPS])
+ax.set_ylabel("time(M2) / time(M1)")
+xmax = positions[-1] + 0.6
+ax.set_xlim(-0.7, xmax + 3.4)
+ax.text(xmax + 0.15, 1.5, "above 1: M1 faster", fontsize=9, va="bottom")
+ax.text(xmax + 0.15, 0.66, "below 1: M2 faster", fontsize=9, va="top")
+for s in SOLVER_ORDER:
+    ax.bar([0], [0], color=SOLVER_COLOR[s], edgecolor=SLATE, label=SOLVER_LABEL[s])
+ax.legend(loc="lower right", fontsize=9)
 fig.savefig(OUT / "exp2_paired_time.pdf")
 plt.close(fig)
 
