@@ -348,5 +348,12 @@ log("products with O_j > m (large variant): "
 e1v = e1[e1.solver == "gurobi"]
 log("Experiment 1 LP gap by variant:\n" + e1v.groupby(["capacity_variant", "formulation"]).lp_gap_percent.agg(["count", "mean"]).round(2).to_string())
 
+nodes = e2[e2.solver == "cplex"]
+log("CPLEX runs with zero branch-and-bound nodes, by model: "
+    + str(nodes.groupby("model").branch_and_bound_nodes.agg(lambda v: int((v == 0).sum())).to_dict())
+    + f"; node counts recorded for other solvers: {int(e2[e2.solver != 'cplex'].branch_and_bound_nodes.count())}")
+slow = nodes.sort_values("elapsed_seconds", ascending=False).iloc[0]
+log(f"longest CPLEX run: {slow.instance} {slow.model} {slow.elapsed_seconds:.1f}s nodes={slow.branch_and_bound_nodes}")
+
 (OUT / "summary.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
 print("\n".join(lines))

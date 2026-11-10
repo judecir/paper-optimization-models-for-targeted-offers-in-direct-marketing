@@ -233,3 +233,5 @@ l                M1              23  84.94
 s                M1              27  68.21
                  M2              27   7.53
                  M3              27   2.26
+CPLEX runs with zero branch-and-bound nodes, by model: {'M1': 155, 'M2': 157}; node counts recorded for other solvers: 0
+longest CPLEX run: S3_n15_R5_l_minimum_seed1.json M1 1145.4s nodes=0.0
